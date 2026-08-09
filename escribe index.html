@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOlozas - PWA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#bd6b52',
+                        'paper-cream': '#fdf9f2',
+                        'dark-parchment': '#2c2926',
+                        'washi-pink': '#f7e8e4',
+                        'sage-green': '#d0e1c6'
+                    },
+                    fontFamily: {
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Lora', serif; background-color: #fdf9f2; }
+        .logo-text { letter-spacing: 0.05em; text-transform: none; }
+        .recipe-card { transition: transform 0.2s; }
+        .recipe-card:active { transform: scale(0.98); }
+    </style>
+</head>
+<body class="bg-paper-cream text-[#3d3a38] pb-24">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-paper-cream shadow-sm px-4 py-3 flex justify-between items-center border-b border-[#dddad3]">
+        <div class="flex items-center gap-3">
+            <button class="material-icons text-primary">menu</button>
+            <div class="flex items-center gap-2">
+                <img src="{{DATA:IMAGE:IMAGE_3}}" alt="Logo" class="h-10 w-10 object-contain">
+                <span class="text-2xl font-semibold text-primary logo-text">GOlozas</span>
+            </div>
+        </div>
+        <button class="material-icons text-[#3d3a38]">account_circle</button>
+    </header>
+
+    <!-- Search & Filters -->
+    <main class="max-w-md mx-auto p-4 space-y-6">
+        <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 material-icons text-[#8e8a86]">search</span>
+            <input type="text" placeholder="Buscar recetas..." class="w-full pl-10 pr-4 py-3 bg-white border border-[#dddad3] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary">
+        </div>
+
+        <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+            <button class="px-4 py-2 bg-sage-green text-[#3d3a38] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Todas</button>
+            <button class="px-4 py-2 bg-[#f7f3ec] text-[#3d3a38] border border-[#dddad3] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Dulces</button>
+            <button class="px-4 py-2 bg-[#f7f3ec] text-[#3d3a38] border border-[#dddad3] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Panes</button>
+            <button class="px-4 py-2 bg-[#f7f3ec] text-[#3d3a38] border border-[#dddad3] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Tortas</button>
+            <button class="px-4 py-2 bg-[#f7f3ec] text-[#3d3a38] border border-[#dddad3] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Galletas</button>
+        </div>
+
+        <!-- Recipe List -->
+        <div class="space-y-6">
+            <!-- Card 1 -->
+            <div class="recipe-card bg-white rounded-xl overflow-hidden shadow-sm border border-[#dddad3]">
+                <div class="relative h-64">
+                    <img src="https://images.unsplash.com/photo-1585478259715-876a6a81dc41?auto=format&fit=crop&q=80&w=800" alt="Pan de Masa Madre" class="w-full h-full object-cover">
+                    <button class="absolute top-3 right-3 bg-white/80 p-2 rounded-full material-icons text-primary text-sm shadow-sm">favorite_border</button>
+                </div>
+                <div class="p-5 space-y-2">
+                    <h3 class="text-xl font-bold leading-tight">Pan de Masa Madre</h3>
+                    <p class="text-[#6b6763] text-sm leading-relaxed">Una receta tradicional que requiere paciencia, pero el resultado vale cada minuto.</p>
+                    <div class="flex items-center gap-3 text-[11px] font-bold text-[#8e8a86] uppercase tracking-widest">
+                        <span>12H</span>
+                        <span>•</span>
+                        <span>FÁCIL</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="recipe-card bg-white rounded-xl overflow-hidden shadow-sm border border-[#dddad3]">
+                <div class="relative h-64">
+                    <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&q=80&w=800" alt="Tarta de Frutos Rojos" class="w-full h-full object-cover">
+                    <button class="absolute top-3 right-3 bg-white/80 p-2 rounded-full material-icons text-primary text-sm shadow-sm">favorite_border</button>
+                </div>
+                <div class="p-5 space-y-2">
+                    <h3 class="text-xl font-bold leading-tight">Tarta de Frutos Rojos</h3>
+                    <p class="text-[#6b6763] text-sm leading-relaxed">Fresca, equilibrada y perfecta para lucirse en cualquier merienda.</p>
+                    <div class="flex items-center gap-3 text-[11px] font-bold text-[#8e8a86] uppercase tracking-widest">
+                        <span>45M</span>
+                        <span>•</span>
+                        <span>MEDIO</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Suggestion Banner -->
+            <div class="bg-primary p-8 rounded-xl text-white text-center space-y-4 shadow-md relative overflow-hidden">
+                <div class="relative z-10 space-y-4">
+                    <span class="material-icons text-washi-pink">auto_awesome</span>
+                    <h2 class="text-3xl font-light italic">Descubre Nuevos Sabores</h2>
+                    <p class="text-sm opacity-90 font-medium">Nuestra IA te sugiere combinaciones basándose en lo que tienes en tu despensa.</p>
+                    <button class="bg-white text-primary px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">Explorar</button>
+                </div>
+                <div class="absolute inset-0 bg-black/5"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 w-full bg-[#f7f3ec] border-t border-[#dddad3] px-6 py-3 flex justify-between items-center z-50">
+        <button class="flex flex-col items-center gap-1 text-primary">
+            <span class="material-icons">menu_book</span>
+            <span class="text-[10px] font-bold uppercase tracking-tighter">Recetas</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-[#8e8a86]">
+            <span class="material-icons">add_circle_outline</span>
+            <span class="text-[10px] font-bold uppercase tracking-tighter">Añadir</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-[#8e8a86]">
+            <span class="material-icons">bookmark_border</span>
+            <span class="text-[10px] font-bold uppercase tracking-tighter">Guardadas</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-[#8e8a86]">
+            <span class="material-icons">settings</span>
+            <span class="text-[10px] font-bold uppercase tracking-tighter">Ajustes</span>
+        </button>
+    </nav>
+
+    <script>
+        // Lógica de base de datos local y PWA vendrá aquí
+        console.log("GOlozas PWA cargada");
+    </script>
+</body>
+</html>
