@@ -1,1 +1,251 @@
-<!DOCTYPE html> <html lang="es"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>GOlozas - PWA</title> <script src="https://cdn.tailwindcss.com"></script> <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap" rel="stylesheet"> <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> <script> tailwind.config = { theme: { extend: { colors: { primary: '#bd6b52', 'paper-cream': '#fdf9f2', 'dark-parchment': '#2c2926', 'washi-pink': '#f7e8e4', 'sage-green': '#d0e1c6' }, fontFamily: { serif: ['Lora', 'serif'], } } } } </script> <style> body { font-family: 'Lora', serif; background-color: #fdf9f2; -webkit-tap-highlight-color: transparent; } .logo-text { letter-spacing: 0.05em; text-transform: none; } .recipe-card { transition: transform 0.2s; } .recipe-card:active { transform: scale(0.98); } .no-scrollbar::-webkit-scrollbar { display: none; } .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } </style> </head> <body class="bg-paper-cream text-[#3d3a38] pb-24"> <!-- Header --> <header class="sticky top-0 z-50 bg-paper-cream shadow-sm px-4 py-3 flex justify-between items-center border-b border-[#dddad3]"> <div class="flex items-center gap-3"> <button class="material-icons text-primary">menu</button> <div class="flex items-center gap-2"> <!-- LOGO ELEGANTE --> <img src="GOlozas - elegant homemade bakery logo, minimalist fine-line illustration, artisanal kitchen tools, warm terracotta and sage, sophisticated editorial style. Design context: - Primary color: #bd6b52 - Font: publicSans - Mode: light - Roundness: rounded-sm . The logo should be visually consistent with these brand tokens." alt="GOlozas Logo" class="h-10 w-10 object-contain"> <span class="text-2xl font-semibold text-primary logo-text">GOlozas</span> </div> </div> <button class="material-icons text-[#3d3a38]">account_circle</button> </header> <!-- Search & Filters --> <main class="max-w-md mx-auto p-4 space-y-6"> <div class="relative"> <span class="absolute left-3 top-1/2 -translate-y-1/2 material-icons text-[#8e8a86]">search</span> <input type="text" placeholder="Buscar recetas..." class="w-full pl-10 pr-4 py-3 bg-white border border-[#dddad3] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"> </div> <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar"> <button class="px-4 py-2 bg-sage-green text-[#3d3a38] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Todas</button> <button class="px-4 py-2 bg-[#f7f3ec] text-[#3d3a38] border border-[#dddad3] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Dulces</button> <button class="px-4 py-2 bg-[#f7f3ec] text-[#3d3a38] border border-[#dddad3] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Panes</button> <button class="px-4 py-2 bg-[#f7f3ec] text-[#3d3a38] border border-[#dddad3] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Tortas</button> <button class="px-4 py-2 bg-[#f7f3ec] text-[#3d3a38] border border-[#dddad3] rounded-full text-sm font-medium whitespace-nowrap uppercase tracking-wider">Galletas</button> </div> <!-- Recipe List --> <div class="space-y-6"> <!-- Card 1 --> <div class="recipe-card bg-white rounded-xl overflow-hidden shadow-sm border border-[#dddad3]"> <div class="relative h-64"> <img src="https://images.unsplash.com/photo-1585478259715-876a6a81dc41?auto=format&fit=crop&q=80&w=800" alt="Pan de Masa Madre" class="w-full h-full object-cover"> <button class="absolute top-3 right-3 bg-white/80 p-2 rounded-full material-icons text-primary text-sm shadow-sm">favorite_border</button> </div> <div class="p-5 space-y-2"> <h3 class="text-xl font-bold leading-tight">Pan de Masa Madre</h3> <p class="text-[#6b6763] text-sm leading-relaxed">Una receta tradicional que requiere paciencia, pero el resultado vale cada minuto.</p> <div class="flex items-center gap-3 text-[11px] font-bold text-[#8e8a86] uppercase tracking-widest"> <span>12H</span> <span>•</span> <span>FÁCIL</span> </div> </div> </div> <!-- Card 2 --> <div class="recipe-card bg-white rounded-xl overflow-hidden shadow-sm border border-[#dddad3]"> <div class="relative h-64"> <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&q=80&w=800" alt="Tarta de Frutos Rojos" class="w-full h-full object-cover"> <button class="absolute top-3 right-3 bg-white/80 p-2 rounded-full material-icons text-primary text-sm shadow-sm">favorite_border</button> </div> <div class="p-5 space-y-2"> <h3 class="text-xl font-bold leading-tight">Tarta de Frutos Rojos</h3> <p class="text-[#6b6763] text-sm leading-relaxed">Fresca, equilibrada y perfecta para lucirse en cualquier merienda.</p> <div class="flex items-center gap-3 text-[11px] font-bold text-[#8e8a86] uppercase tracking-widest"> <span>45M</span> <span>•</span> <span>MEDIO</span> </div> </div> </div> <!-- AI Suggestion Banner --> <div class="bg-primary p-8 rounded-xl text-white text-center space-y-4 shadow-md relative overflow-hidden"> <div class="relative z-10 space-y-4"> <span class="material-icons text-washi-pink">auto_awesome</span> <h2 class="text-3xl font-light italic">Descubre Nuevos Sabores</h2> <p class="text-sm opacity-90 font-medium">Nuestra IA te sugiere combinaciones basándose en lo que tienes en tu despensa.</p> <button class="bg-white text-primary px-8 py-3 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">Explorar</button> </div> <div class="absolute inset-0 bg-black/5"></div> </div> </div> </main> <!-- Modal para Añadir Receta --> <div id="add-modal" class="fixed inset-0 z-[60] bg-black/50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300"> <div class="bg-paper-cream w-full max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl transform translate-y-full transition-transform duration-300"> <div class="p-6 space-y-6"> <div class="flex justify-between items-center"> <h2 class="text-2xl font-bold text-primary">Nueva Receta</h2> <button onclick="toggleModal()" class="material-icons text-[#8e8a86]">close</button> </div> <form id="recipe-form" class="space-y-4"> <div class="space-y-1"> <label class="text-[11px] font-bold text-[#8e8a86] uppercase tracking-widest">Título de la receta</label> <input type="text" required class="w-full p-3 bg-white border border-[#dddad3] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"> </div> <div class="space-y-1"> <label class="text-[11px] font-bold text-[#8e8a86] uppercase tracking-widest">Descripción corta</label> <textarea rows="2" class="w-full p-3 bg-white border border-[#dddad3] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"></textarea> </div> <div class="grid grid-cols-2 gap-4"> <div class="space-y-1"> <label class="text-[11px] font-bold text-[#8e8a86] uppercase tracking-widest">Tiempo</label> <input type="text" placeholder="Ej: 30M" class="w-full p-3 bg-white border border-[#dddad3] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary"> </div> <div class="space-y-1"> <label class="text-[11px] font-bold text-[#8e8a86] uppercase tracking-widest">Dificultad</label> <select class="w-full p-3 bg-white border border-[#dddad3] rounded-lg focus:outline-none focus:ring-1 focus:ring-primary appearance-none"> <option>FÁCIL</option> <option>MEDIO</option> <option>PRO</option> </select> </div> </div> <button type="submit" class="w-full bg-primary text-white py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg mt-4">Guardar Receta</button> </form> </div> </div> </div> <!-- Bottom Nav --> <nav class="fixed bottom-0 left-0 w-full bg-[#f7f3ec] border-t border-[#dddad3] px-6 py-3 flex justify-between items-center z-50"> <button class="flex flex-col items-center gap-1 text-primary"> <span class="material-icons">menu_book</span> <span class="text-[10px] font-bold uppercase tracking-tighter">Recetas</span> </button> <button onclick="toggleModal()" class="flex flex-col items-center gap-1 text-[#8e8a86]"> <span class="material-icons">add_circle_outline</span> <span class="text-[10px] font-bold uppercase tracking-tighter">Añadir</span> </button> <button class="flex flex-col items-center gap-1 text-[#8e8a86]"> <span class="material-icons">bookmark_border</span> <span class="text-[10px] font-bold uppercase tracking-tighter">Guardadas</span> </button> <button class="flex flex-col items-center gap-1 text-[#8e8a86]"> <span class="material-icons">settings</span> <span class="text-[10px] font-bold uppercase tracking-tighter">Ajustes</span> </button> </nav> <script> function toggleModal() { const modal = document.getElementById('add-modal'); const content = modal.querySelector('div'); if (modal.classList.contains('hidden')) { modal.classList.remove('hidden'); setTimeout(() => { content.classList.remove('translate-y-full'); }, 10); } else { content.classList.add('translate-y-full'); setTimeout(() => { modal.classList.add('hidden'); }, 300); } } document.getElementById('recipe-form').addEventListener('submit', function(e) { e.preventDefault(); alert('¡Receta guardada localmente! (Pronto activaremos la base de datos)'); toggleModal(); }); console.log("GOlozas PWA: Versión Final Lista"); </script> </body> </html>
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_62 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_62" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_62');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GOlozas - Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#bd6b52',
+                        'paper-cream': '#fdf9f2',
+                        'sage-green': '#d0e1c6',
+                        'terracota-dark': '#904731'
+                    },
+                    fontFamily: {
+                        serif: ['Lora', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Lora', serif; background-color: #fdf9f2; color: #3d3a38; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .recipe-card:hover { transform: translateY(-4px); transition: all 0.3s ease; }
+        .glass-modal { background: rgba(253, 249, 242, 0.95); backdrop-filter: blur(10px); }
+    </style>
+
+<body class="min-h-screen">
+<!-- Header Responsivo -->
+<header class="sticky top-0 z-50 bg-paper-cream/90 backdrop-blur-md border-b border-[#dddad3] px-6 py-4">
+<div class="max-w-7xl mx-auto flex justify-between items-center">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<img alt="Logo" class="h-12 w-12 object-contain" src="{{DATA:IMAGE:IMAGE_14}}"/>
+<span class="text-3xl font-serif text-primary italic hidden sm:inline">GOlozas</span>
+</div>
+<nav class="hidden md:flex gap-6 text-sm font-medium uppercase tracking-widest text-[#6b6763]">
+<a class="hover:text-primary transition-colors border-b-2 border-primary" href="#">Inicio</a>
+<a class="hover:text-primary transition-colors" href="#">Explorar</a>
+<a class="hover:text-primary transition-colors" href="#">Libro de Cocina</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-icons text-[#3d3a38] p-2 hover:bg-black/5 rounded-full">search</button>
+<button class="material-icons text-[#3d3a38] p-2 hover:bg-black/5 rounded-full">account_circle</button>
+</div>
+</div>
+</header>
+<div class="max-w-7xl mx-auto flex gap-8 p-6">
+<!-- Sidebar (Desktop) -->
+<aside class="hidden lg:block w-64 space-y-8 sticky top-28 h-fit">
+<div class="space-y-4">
+<h2 class="text-xs font-bold uppercase tracking-[0.2em] text-[#8e8a86]">Categorías</h2>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 bg-sage-green/30 text-primary rounded-lg font-bold" href="#">
+<span class="material-icons text-sm">bakery_dining</span> Panes
+                    </a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#6b6763] hover:bg-black/5 rounded-lg" href="#">
+<span class="material-icons text-sm">cake</span> Tortas
+                    </a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#6b6763] hover:bg-black/5 rounded-lg" href="#">
+<span class="material-icons text-sm">cookie</span> Galletas
+                    </a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#6b6763] hover:bg-black/5 rounded-lg" href="#">
+<span class="material-icons text-sm">icecream</span> Dulces
+                    </a>
+</nav>
+</div>
+<div class="p-6 bg-white border border-[#dddad3] rounded-2xl space-y-4">
+<h3 class="font-bold text-primary italic">Tu Despensa</h3>
+<p class="text-xs text-[#8e8a86]">Dinos qué tienes y te sugeriremos qué hornear.</p>
+<textarea class="w-full p-3 text-sm bg-paper-cream border border-[#dddad3] rounded-xl focus:outline-none focus:ring-1 focus:ring-primary" placeholder="Ej: Harina, canela, manzanas..."></textarea>
+<button class="w-full py-2 bg-primary text-white text-xs font-bold uppercase tracking-widest rounded-lg shadow-sm">Sugerir Recetas</button>
+</div>
+</aside>
+<!-- Contenido Principal -->
+<main class="flex-1 space-y-8">
+<div class="flex justify-between items-end">
+<div>
+<h1 class="text-4xl font-serif italic text-terracota-dark">Panes Artesanales</h1>
+<p class="text-[#8e8a86] mt-2">Recetas cálidas para acompañar tus mañanas.</p>
+</div>
+<button class="flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-bold shadow-lg hover:scale-105 transition-transform" onclick="toggleModal()">
+<span class="material-icons">add</span>
+                    Nueva Receta
+                </button>
+</div>
+<!-- Grid de Recetas -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Card 1 -->
+<div class="recipe-card bg-white rounded-3xl overflow-hidden shadow-sm border border-[#dddad3]">
+<div class="relative h-72">
+<img alt="Pan" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1585478259715-876a6a81dc41?auto=format&amp;fit=crop&amp;q=80&amp;w=800"/>
+<span class="absolute top-4 left-4 bg-white/90 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full">Destacado</span>
+</div>
+<div class="p-8 space-y-4">
+<h3 class="text-2xl font-bold">Pan de Masa Madre Clásico</h3>
+<p class="text-[#6b6763] leading-relaxed">El proceso completo para lograr una corteza crujiente y una miga alveolada perfecta.</p>
+<div class="flex items-center gap-4 text-[10px] font-bold text-[#8e8a86] uppercase tracking-widest border-t border-black/5 pt-4">
+<span class="flex items-center gap-1"><span class="material-icons text-sm">schedule</span> 12H</span>
+<span class="flex items-center gap-1"><span class="material-icons text-sm">bar_chart</span> Fácil</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="recipe-card bg-white rounded-3xl overflow-hidden shadow-sm border border-[#dddad3]">
+<div class="relative h-72">
+<img alt="Focaccia" class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&amp;fit=crop&amp;q=80&amp;w=800"/>
+</div>
+<div class="p-8 space-y-4">
+<h3 class="text-2xl font-bold">Focaccia de Romero</h3>
+<p class="text-[#6b6763] leading-relaxed">Aceite de oliva virgen, sal marina y romero fresco. Simple y deliciosa.</p>
+<div class="flex items-center gap-4 text-[10px] font-bold text-[#8e8a86] uppercase tracking-widest border-t border-black/5 pt-4">
+<span class="flex items-center gap-1"><span class="material-icons text-sm">schedule</span> 3H</span>
+<span class="flex items-center gap-1"><span class="material-icons text-sm">bar_chart</span> Medio</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Modal de Creación Pro (Responsivo) -->
+<div class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4" id="add-modal">
+<div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="toggleModal()"></div>
+<div class="bg-paper-cream w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] overflow-hidden shadow-2xl relative flex flex-col">
+<div class="p-8 border-b border-[#dddad3] flex justify-between items-center">
+<h2 class="text-3xl font-serif italic text-primary">Crear Nueva Obra Maestra</h2>
+<button class="material-icons text-[#8e8a86] hover:text-primary" onclick="toggleModal()">close</button>
+</div>
+<div class="flex-1 overflow-y-auto p-8 space-y-10 no-scrollbar">
+<!-- Sección 1: Info Básica -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="space-y-4">
+<div class="space-y-1">
+<label class="text-[10px] font-bold uppercase tracking-widest text-[#8e8a86]">Nombre de la Receta</label>
+<input class="w-full p-4 bg-white border border-[#dddad3] rounded-2xl focus:ring-1 focus:ring-primary outline-none" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="text-[10px] font-bold uppercase tracking-widest text-[#8e8a86]">Link de Referencia (Web/Video)</label>
+<input class="w-full p-4 bg-white border border-[#dddad3] rounded-2xl focus:ring-1 focus:ring-primary outline-none" placeholder="https://..." type="url"/>
+</div>
+</div>
+<!-- IA Magic Section -->
+<div class="p-6 bg-terracota-dark/5 border border-primary/20 rounded-3xl space-y-4">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-icons text-sm">auto_awesome</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Asistente IA GOlozas</span>
+</div>
+<p class="text-xs leading-relaxed text-[#6b6763]">Pega el caption de Instagram o tus notas desordenadas aquí. Nuestra IA las organizará por ti.</p>
+<textarea class="w-full p-4 h-32 bg-white/50 border border-primary/10 rounded-2xl text-sm focus:outline-none" placeholder="Pega aquí el texto..."></textarea>
+<button class="w-full py-3 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-xl shadow-md">Procesar con IA</button>
+</div>
+</div>
+<!-- Sección 2: Multimedia & Ilustraciones -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="space-y-4 md:col-span-2">
+<h3 class="text-xs font-bold uppercase tracking-widest text-[#8e8a86]">Fotos del Avance</h3>
+<div class="grid grid-cols-3 gap-4">
+<div class="aspect-square border-2 border-dashed border-[#dddad3] rounded-2xl flex flex-col items-center justify-center text-[#8e8a86] hover:border-primary transition-colors cursor-pointer group">
+<span class="material-icons group-hover:scale-110 transition-transform">add_a_photo</span>
+<span class="text-[8px] mt-2 font-bold uppercase">Añadir</span>
+</div>
+<div class="aspect-square bg-black/5 rounded-2xl"></div>
+<div class="aspect-square bg-black/5 rounded-2xl"></div>
+</div>
+</div>
+<div class="space-y-4">
+<h3 class="text-xs font-bold uppercase tracking-widest text-[#8e8a86]">Ilustraciones</h3>
+<div class="p-4 border border-[#dddad3] rounded-2xl bg-white space-y-4">
+<div class="flex items-center justify-between p-3 bg-paper-cream rounded-xl cursor-pointer">
+<span class="material-icons text-primary">brush</span>
+<span class="text-xs font-medium">Elegir Set...</span>
+<span class="material-icons text-sm">chevron_right</span>
+</div>
+<p class="text-[10px] text-center italic text-[#8e8a86]">"Añade un toque artístico a tu ficha"</p>
+</div>
+</div>
+</div>
+</div>
+<div class="p-8 border-t border-[#dddad3] bg-white flex gap-4">
+<button class="flex-1 py-4 border border-[#dddad3] rounded-2xl text-xs font-bold uppercase tracking-widest text-[#6b6763]" onclick="toggleModal()">Cancelar</button>
+<button class="flex-[2] py-4 bg-primary text-white rounded-2xl text-xs font-bold uppercase tracking-widest shadow-xl">Guardar Receta en mi Archivo</button>
+</div>
+</div>
+</div>
+<!-- Nav Inferior (Mobile only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-paper-cream/95 backdrop-blur-md border-t border-[#dddad3] flex justify-around py-4 z-50">
+<button class="text-primary flex flex-col items-center gap-1">
+<span class="material-icons">menu_book</span>
+<span class="text-[8px] font-bold uppercase">Recetas</span>
+</button>
+<button class="text-[#8e8a86] flex flex-col items-center gap-1" onclick="toggleModal()">
+<span class="material-icons">add_circle</span>
+<span class="text-[8px] font-bold uppercase">Añadir</span>
+</button>
+<button class="text-[#8e8a86] flex flex-col items-center gap-1">
+<span class="material-icons">auto_awesome</span>
+<span class="text-[8px] font-bold uppercase">IA</span>
+</button>
+<button class="text-[#8e8a86] flex flex-col items-center gap-1">
+<span class="material-icons">settings</span>
+<span class="text-[8px] font-bold uppercase">Ajustes</span>
+</button>
+</nav>
+<script>
+        function toggleModal() {
+            const modal = document.getElementById('add-modal');
+            modal.classList.toggle('hidden');
+        }
+    </script>
+</body>
+
+})();
+
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_62 -->
+</body>
+</html>
