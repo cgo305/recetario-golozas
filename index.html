@@ -160,6 +160,16 @@
     }
     .pagina-vacio { font-style: italic; color: rgba(61, 58, 56, 0.5); }
 
+    .pagina-equipo {
+      font-family: 'Glass Antiqua', serif;
+      font-size: 1rem;
+      color: rgba(61, 58, 56, 0.7);
+      border-top: 1px dotted rgba(114, 48, 28, 0.3);
+      margin-top: 1.8rem;
+      padding-top: 0.8rem;
+    }
+    .pagina-equipo-titulo { color: #72301c; font-weight: bold; }
+
     /* Índice: la primera hoja del libro */
     .pagina-indice { transform: rotate(-0.3deg); }
     .indice-lista {
@@ -484,6 +494,7 @@
         document.getElementById('recipe-url').value = receta ? (receta.url || '') : '';
         document.getElementById('recipe-ingredients').value = receta ? (receta.ingredients || []).join('\n') : '';
         document.getElementById('recipe-steps').value = receta ? (receta.steps || []).join('\n') : '';
+        document.getElementById('recipe-equipment').value = receta ? (receta.equipment || []).join('\n') : '';
         document.getElementById('selected-illustration').value = receta ? (receta.illustration || '') : '';
         updatePhotoPreview(receta ? (receta.illustration || '') : '');
 
@@ -674,63 +685,346 @@
 
     // ---------------------------------------------------------------
     // Lectura de recetas pegadas desde TikTok, Instagram o un blog.
-    // Antes esto simulaba una IA e inventaba datos de relleno
-    // ("Ingrediente detectado 1"). Ahora analiza el texto de verdad.
+    // Reconoce encabezados en español e inglés, limpia la basura que
+    // suelen traer los blogs y normaliza unidades y temperaturas.
     // ---------------------------------------------------------------
-    const RE_INGREDIENTES = /^\s*(ingredientes|ingredients|qu[eé]\s+necesitas|necesitas|materiales)\s*:?\s*$/i;
-    const RE_PASOS = /^\s*(preparaci[oó]n|procedimiento|instrucciones|pasos|elaboraci[oó]n|c[oó]mo\s+se\s+hace|preparo|m[eé]todo)\s*:?\s*$/i;
-    // Una línea con cantidad: "200 g de harina", "2 tazas de leche", "1/2 cdta sal"
-    const RE_CANTIDAD = /^\s*[-*•·–]?\s*(\d+[\d.,/\s]*)\s*(g|gr|gramos|kg|ml|l|litros?|tazas?|cdas?|cdtas?|cucharad(?:as?|itas?)|pizcas?|unidades?|huevos?|sobres?|latas?|onzas?|oz|lb|libras?)\b/i;
+    const RE_INGREDIENTES = /^\s*(ingredientes?|ingredients?|qu[eé]\s+necesitas|necesitas|materiales)\s*:?\s*$/i;
+    const RE_PASOS = /^\s*(preparaci[oó]n|procedimiento|instrucciones?|instructions?|pasos?|elaboraci[oó]n|c[oó]mo\s+se\s+hace|m[eé]todo|method|directions?|steps?|how\s+to\s+make)\s*:?\s*$/i;
+    const RE_EQUIPO = /^\s*(equipo|equipamiento|equipment|utensilios?|herramientas|tools|necesitar[aá]s)\s*:?\s*$/i;
+    const RE_NOTAS = /^\s*(notas?|notes?|tips?|consejos?|sugerencias?)\s*:?\s*$/i;
+    const RE_CANTIDAD = /^\s*[-*•·–]?\s*(\d+[\d.,/\s]*)\s*(g|gr|gramos|kg|ml|l|litros?|tazas?|cups?|cdas?|cdtas?|cucharad(?:as?|itas?)|tbsp|tsp|tablespoons?|teaspoons?|onzas?|ounces?|oz|lb|libras?|pounds?|pizcas?|unidades?|huevos?|eggs?|sobres?|latas?)\b/i;
+
+    // Líneas de relleno que dejan los blogs de recetas al copiar.
+    const RE_BASURA = /^\s*(units?usm?|unitsus|us\s*m|customary|metric|category\s*\w*|method\s*\w*|cuisine\s*\w*|course\s*\w*|difficulty\s*\w*|servings?\s*[\d\s]*|yield\s*.*|prep\s*time.*|cook\s*time.*|total\s*time.*|calories.*|nutrition.*|print\s*recipe|pin\s*recipe|save\s*recipe|rate\s*this.*|\d+\s*from\s*\d+\s*votes?|[A-Z]{6,})\s*$/;
+
+    function limpiarLinea(linea) {
+        return linea
+            // enlaces de markdown: deja el texto y descarta la dirección
+            .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+            // enlaces sueltos
+            .replace(/https?:\/\/\S+/g, '')
+            // hashtags y emojis decorativos al final
+            .replace(/#[\wáéíóúñÁÉÍÓÚÑ]+/g, '')
+            .replace(/\*\*/g, '')
+            .trim();
+    }
 
     function limpiarViñeta(linea) {
         return linea.replace(/^\s*[-*•·–—]\s*/, '').replace(/^\s*\d+[.)]\s+/, '').trim();
     }
 
     function esSubtitulo(linea) {
-        // "Para el relleno:" -> subtítulo. "200 g de harina: picada" -> no.
         return /:\s*$/.test(linea) && linea.length < 60;
     }
 
+    // --- Unidades y temperaturas -------------------------------------
+    const UNIDADES = [
+        [/(\d[\d.,/\s]*)\s*ounces?\b/gi,      (m, n) => aproxGramos(n, 28.35)],
+        [/(\d[\d.,/\s]*)\s*oz\b/gi,           (m, n) => aproxGramos(n, 28.35)],
+        [/(\d[\d.,/\s]*)\s*pounds?\b/gi,      (m, n) => aproxGramos(n, 453.6)],
+        [/(\d[\d.,/\s]*)\s*lbs?\b/gi,         (m, n) => aproxGramos(n, 453.6)],
+        [/(\d[\d.,/\s]*)\s*tablespoons?\b/gi, (m, n) => numero(n) + ' ' + plural(n, 'cda', 'cdas')],
+        [/(\d[\d.,/\s]*)\s*tbsp\b/gi,         (m, n) => numero(n) + ' ' + plural(n, 'cda', 'cdas')],
+        [/(\d[\d.,/\s]*)\s*teaspoons?\b/gi,   (m, n) => numero(n) + ' ' + plural(n, 'cdta', 'cdtas')],
+        [/(\d[\d.,/\s]*)\s*tsp\b/gi,          (m, n) => numero(n) + ' ' + plural(n, 'cdta', 'cdtas')],
+        [/(\d[\d.,/\s]*)\s*cups?\b/gi,        (m, n) => numero(n) + ' ' + plural(n, 'taza', 'tazas')]
+    ];
+
+    // "3/4" y "1 1/2" son habituales en recetas en inglés.
+    function aFraccion(txt) {
+        const t = String(txt).trim();
+        const mixto = t.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+        if (mixto) return parseInt(mixto[1], 10) + parseInt(mixto[2], 10) / parseInt(mixto[3], 10);
+        const frac = t.match(/^(\d+)\/(\d+)$/);
+        if (frac) return parseInt(frac[1], 10) / parseInt(frac[2], 10);
+        return parseFloat(t.replace(',', '.'));
+    }
+
+    // En cocina "3/4 taza" se lee mejor que "0,75 tazas": si venía como
+    // fracción, se conserva tal cual.
+    function numero(txt) {
+        const t = String(txt).trim();
+        if (/^\d+\s+\d+\/\d+$/.test(t) || /^\d+\/\d+$/.test(t)) return t;
+        const v = aFraccion(t);
+        if (!isFinite(v)) return t;
+        return String(Math.round(v * 100) / 100).replace('.', ',');
+    }
+
+    // El plural depende del número: "1 taza", "3/4 taza", "2 tazas".
+    function plural(txt, singular, pluralForma) {
+        const v = aFraccion(txt);
+        return (isFinite(v) && v <= 1) ? singular : pluralForma;
+    }
+
+    function aproxGramos(txt, factor) {
+        const v = aFraccion(txt);
+        if (!isFinite(v)) return String(txt).trim();
+        const g = v * factor;
+        // se redondea a algo que se pueda pesar en una balanza de cocina
+        const r = g >= 100 ? Math.round(g / 5) * 5 : Math.round(g);
+        return r + ' g';
+    }
+
+    function convertirUnidades(texto) {
+        let t = texto;
+        UNIDADES.forEach(([re, fn]) => { t = t.replace(re, fn); });
+        // grados Fahrenheit a Celsius, redondeado a múltiplos de 5
+        t = t.replace(/(\d{2,3})\s*°?\s*F\b/g, (m, f) => {
+            const c = (parseInt(f, 10) - 32) * 5 / 9;
+            return (Math.round(c / 5) * 5) + ' °C';
+        });
+        t = t.replace(/(\d+)\s*°\s*C\b/g, '$1 °C');
+        // pulgadas a centímetros
+        t = t.replace(/(\d[\d.,/\s]*)\s*inch(?:es)?\b/gi, (m, n) => {
+            const v = aFraccion(n);
+            return isFinite(v) ? (Math.round(v * 2.54 * 10) / 10).toString().replace('.', ',') + ' cm' : m;
+        });
+        return t;
+    }
+
+    // ---------------------------------------------------------------
+    // Traducción de términos de cocina, inglés a español neutro.
+    // Cubre ingredientes, utensilios y estados de preparación, que es
+    // vocabulario acotado y se traduce bien sin conexión. Las frases
+    // largas van primero para que ganen sobre las palabras sueltas.
+    // ---------------------------------------------------------------
+    const GLOSARIO = [
+        // chocolate y cacao
+        ['bittersweet chocolate', 'chocolate amargo'],
+        ['semisweet chocolate', 'chocolate semiamargo'],
+        ['dark chocolate', 'chocolate amargo'],
+        ['milk chocolate', 'chocolate con leche'],
+        ['white chocolate', 'chocolate blanco'],
+        ['chocolate chips', 'chips de chocolate'],
+        ['chocolate chunks', 'trozos de chocolate'],
+        ['cocoa powder', 'cacao en polvo'],
+        ['dutch process cocoa', 'cacao alcalinizado'],
+        ['unsweetened cocoa', 'cacao sin azúcar'],
+        // azúcares
+        ['light brown sugar', 'azúcar morena clara'],
+        ['dark brown sugar', 'azúcar morena oscura'],
+        ['brown sugar', 'azúcar morena'],
+        ['granulated sugar', 'azúcar granulada'],
+        ['white sugar', 'azúcar blanca'],
+        ['powdered sugar', 'azúcar flor'],
+        ['confectioners sugar', 'azúcar flor'],
+        ['icing sugar', 'azúcar flor'],
+        ['caster sugar', 'azúcar granulada fina'],
+        // grasas y lácteos
+        ['unsalted butter', 'mantequilla sin sal'],
+        ['salted butter', 'mantequilla con sal'],
+        ['heavy cream', 'crema para batir'],
+        ['whipping cream', 'crema para batir'],
+        ['sour cream', 'crema ácida'],
+        ['cream cheese', 'queso crema'],
+        ['buttermilk', 'suero de leche'],
+        ['whole milk', 'leche entera'],
+        ['condensed milk', 'leche condensada'],
+        ['evaporated milk', 'leche evaporada'],
+        ['vegetable oil', 'aceite vegetal'],
+        ['olive oil', 'aceite de oliva'],
+        ['coconut oil', 'aceite de coco'],
+        // harinas y leudantes
+        ['all purpose flour', 'harina común'],
+        ['all-purpose flour', 'harina común'],
+        ['bread flour', 'harina de fuerza'],
+        ['cake flour', 'harina para tortas'],
+        ['self rising flour', 'harina con polvos de hornear'],
+        ['whole wheat flour', 'harina integral'],
+        ['almond flour', 'harina de almendras'],
+        ['baking powder', 'polvos de hornear'],
+        ['baking soda', 'bicarbonato de sodio'],
+        ['active dry yeast', 'levadura seca activa'],
+        ['instant yeast', 'levadura instantánea'],
+        ['dry yeast', 'levadura seca'],
+        ['cornstarch', 'maicena'],
+        ['corn starch', 'maicena'],
+        // huevos
+        ['egg whites', 'claras de huevo'],
+        ['egg yolks', 'yemas de huevo'],
+        ['egg white', 'clara de huevo'],
+        ['egg yolk', 'yema de huevo'],
+        ['room temperature', 'a temperatura ambiente'],
+        ['eggs', 'huevos'], ['egg', 'huevo'],
+        // sabores
+        ['vanilla extract', 'esencia de vainilla'],
+        ['almond extract', 'esencia de almendra'],
+        ['espresso powder', 'café espresso en polvo'],
+        ['instant coffee', 'café instantáneo'],
+        ['ground cinnamon', 'canela molida'],
+        ['cinnamon', 'canela'],
+        ['nutmeg', 'nuez moscada'],
+        ['ginger', 'jengibre'],
+        ['cloves', 'clavo de olor'],
+        ['lemon zest', 'ralladura de limón'],
+        ['orange zest', 'ralladura de naranja'],
+        ['lemon juice', 'jugo de limón'],
+        ['sea salt', 'sal de mar'],
+        ['kosher salt', 'sal gruesa'],
+        ['salt', 'sal'],
+        // frutos secos y otros
+        ['walnuts', 'nueces'], ['pecans', 'pecanas'], ['almonds', 'almendras'],
+        ['hazelnuts', 'avellanas'], ['peanuts', 'maní'],
+        ['peanut butter', 'mantequilla de maní'],
+        ['honey', 'miel'], ['maple syrup', 'jarabe de arce'],
+        ['water', 'agua'], ['milk', 'leche'], ['butter', 'mantequilla'],
+        ['flour', 'harina'], ['sugar', 'azúcar'], ['chocolate', 'chocolate'],
+        ['cream', 'crema'], ['yeast', 'levadura'], ['vanilla', 'vainilla'],
+        // estados y cortes
+        ['finely chopped', 'picado fino'],
+        ['roughly chopped', 'picado grueso'],
+        ['chopped', 'picado'], ['melted', 'derretida'], ['softened', 'blanda'],
+        ['sifted', 'tamizada'], ['divided', 'dividido'], ['packed', 'compactada'],
+        ['grated', 'rallado'], ['sliced', 'en rodajas'], ['cubed', 'en cubos'],
+        ['toasted', 'tostado'], ['optional', 'opcional'],
+        ['plus more for', 'más un poco para'],
+        ['at room temperature', 'a temperatura ambiente'],
+        // utensilios
+        ['stand mixer', 'batidora de pie'],
+        ['hand mixer', 'batidora de mano'],
+        ['whisk attachment', 'accesorio globo'],
+        ['paddle attachment', 'accesorio pala'],
+        ['baking sheet', 'bandeja de horno'],
+        ['cookie sheet', 'bandeja de horno'],
+        ['parchment paper sheets', 'papel de horno'],
+        ['parchment paper', 'papel de horno'],
+        ['cookie scoops', 'cuchara para galletas'],
+        ['cookie scoop', 'cuchara para galletas'],
+        ['mixing bowl', 'bol'],
+        ['wire rack', 'rejilla'],
+        ['rubber spatula', 'espátula de silicona'],
+        ['measuring cups', 'tazas medidoras'],
+        ['rolling pin', 'uslero'],
+        ['cake pan', 'molde para torta'],
+        ['loaf pan', 'molde de budín'],
+        ['muffin tin', 'molde para muffins'],
+        ['oven', 'horno'], ['whisk', 'batidor'], ['spatula', 'espátula'],
+        ['bowl', 'bol'], ['pan', 'molde']
+    ];
+
+    // Un texto se considera en inglés si aparecen suficientes marcas suyas.
+    function pareceIngles(texto) {
+        const t = ' ' + texto.toLowerCase() + ' ';
+        const marcas = [' the ', ' and ', ' with ', ' until ', ' cup', ' tablespoon', ' teaspoon',
+                        ' ounces', ' preheat', ' bake ', ' mix ', ' add ', ' butter', ' flour',
+                        ' sugar', ' eggs', ' minutes', ' degrees', 'instructions', 'ingredients'];
+        return marcas.filter(m => t.includes(m)).length >= 4;
+    }
+
+    function traducirTermino(texto) {
+        let t = ' ' + texto + ' ';
+        GLOSARIO.forEach(([en, es]) => {
+            const re = new RegExp('(?<![\\wáéíóúñ])' + en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\wáéíóúñ])', 'gi');
+            t = t.replace(re, es);
+        });
+        return t
+            .replace(/\bof\b/gi, 'de')
+            .replace(/\s+,/g, ',')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+    }
+
+    // "8 ounces chocolate" -> "225 g de chocolate": en español va "de".
+    function ordenarIngrediente(t) {
+        return t.replace(/^(\d[\d.,/\s]*\s*(?:g|kg|ml|l|cdas?|cdtas?|tazas?|unidades?|pizcas?)\s+)(?!de\b|a\b)/i, '$1de ');
+    }
+
     function parsearReceta(texto) {
-        const lineas = texto.split('\n').map(l => l.trim());
+        const crudas = texto.split('\n');
         const ingredientes = [];
         const pasos = [];
+        const equipo = [];
+        const notas = [];
+        const libres = [];
         let titulo = '';
         let seccion = 'ninguna';
 
-        for (const cruda of lineas) {
-            if (!cruda) continue;
-
-            // Los hashtags de TikTok no aportan nada.
-            const linea = cruda.replace(/#[\wáéíóúñÁÉÍÓÚÑ]+/g, '').trim();
-            if (!linea) continue;
+        for (const cruda of crudas) {
+            const linea = limpiarLinea(cruda);
+            if (!linea || linea === '*' || linea === '-') continue;
+            // La basura suele venir con viñeta ("* CATEGORYDESSERT"), así
+            // que se comprueba también sin ella.
+            if (RE_BASURA.test(linea) || RE_BASURA.test(limpiarViñeta(linea))) continue;
 
             if (RE_INGREDIENTES.test(linea)) { seccion = 'ingredientes'; continue; }
             if (RE_PASOS.test(linea))        { seccion = 'pasos'; continue; }
+            if (RE_EQUIPO.test(linea))       { seccion = 'equipo'; continue; }
+            if (RE_NOTAS.test(linea))        { seccion = 'notas'; continue; }
 
             if (seccion === 'ingredientes') {
-                // Un subtítulo se guarda tal cual, con sus dos puntos.
-                ingredientes.push(esSubtitulo(linea) ? linea : limpiarViñeta(linea));
+                ingredientes.push(esSubtitulo(linea) ? linea : convertirUnidades(limpiarViñeta(linea)));
             } else if (seccion === 'pasos') {
-                pasos.push(limpiarViñeta(linea));
+                const paso = convertirUnidades(limpiarViñeta(linea));
+                if (paso) pasos.push(paso);
+            } else if (seccion === 'equipo') {
+                const e = limpiarViñeta(linea);
+                if (e) equipo.push(e);
+            } else if (seccion === 'notas') {
+                notas.push(limpiarViñeta(linea));
             } else if (!titulo && linea.length <= 80) {
                 titulo = limpiarViñeta(linea);
+            } else {
+                libres.push(limpiarViñeta(linea));
             }
         }
 
-        // Si no venían encabezados, deducimos por la forma de cada línea:
-        // las que empiezan con cantidad son ingredientes, las largas son pasos.
+        // Sin encabezados: se deduce por la forma de cada línea.
         if (ingredientes.length === 0 && pasos.length === 0) {
-            const utiles = lineas.map(l => l.replace(/#[\wáéíóúñÁÉÍÓÚÑ]+/g, '').trim()).filter(Boolean);
+            const utiles = crudas.map(limpiarLinea).filter(l => l && !RE_BASURA.test(l) && !RE_BASURA.test(limpiarViñeta(l)));
             utiles.forEach((linea, i) => {
                 if (i === 0 && !titulo) { titulo = limpiarViñeta(linea); return; }
-                if (RE_CANTIDAD.test(linea)) ingredientes.push(limpiarViñeta(linea));
-                else if (linea.length > 40) pasos.push(limpiarViñeta(linea));
+                if (RE_CANTIDAD.test(linea)) ingredientes.push(convertirUnidades(limpiarViñeta(linea)));
+                else if (linea.length > 40) pasos.push(convertirUnidades(limpiarViñeta(linea)));
                 else if (esSubtitulo(linea)) ingredientes.push(linea);
             });
         }
 
-        return { titulo, ingredientes, pasos };
+        return { titulo, ingredientes, pasos, equipo, notas, libres };
+    }
+
+    // Arma una descripción cuando el texto pegado no trae una.
+    function componerDescripcion({ titulo, ingredientes, pasos, equipo, libres }, url) {
+        // 1. Si había párrafos sueltos antes de los ingredientes, esos
+        //    suelen ser la introducción del blog: es la mejor descripción.
+        const parrafo = (libres || []).find(l => l.length > 60 && l.length < 260 && /[.!?]/.test(l));
+        if (parrafo) return parrafo;
+
+        // 2. Si no, se describe a partir de lo que se reconoció.
+        const partes = [];
+        const reales = (ingredientes || []).filter(i => !esSubtitulo(i));
+        const destacados = reales
+            .map(i => i.replace(/^[\d.,/\s]*(g|kg|ml|l|cdas?|cdtas?|tazas?|unidades?|pizcas?)?\s*(de\s+)?/i, '').split(',')[0].trim())
+            .filter(i => i.length > 2)
+            .slice(0, 3);
+        if (destacados.length) partes.push('Con ' + listaEnEspanol(destacados));
+        if (pasos && pasos.length) partes.push(pasos.length + (pasos.length === 1 ? ' paso' : ' pasos'));
+        if (equipo && equipo.length) partes.push('requiere ' + listaEnEspanol(equipo.slice(0, 2)).toLowerCase());
+        if (url) {
+            try { partes.push('receta de ' + new URL(url).hostname.replace(/^www\./, '')); } catch (e) {}
+        }
+        if (!partes.length) return '';
+        return capitalizar(partes.join('. ').replace(/\.\s+([a-záéíóúñ])/g, (m, c) => '. ' + c.toUpperCase())) + '.';
+    }
+
+    function tituloDesdeEnlace(url, traducir) {
+        try {
+            const partes = new URL(url).pathname.split('/').filter(Boolean);
+            const ultima = partes[partes.length - 1] || '';
+            if (!ultima || /^\d+$/.test(ultima)) return '';
+            let t = ultima.replace(/\.\w+$/, '').replace(/[-_]+/g, ' ').trim();
+            if (t.length < 3 || t.length > 70) return '';
+            if (traducir) t = traducirTermino(t);
+            return t.charAt(0).toUpperCase() + t.slice(1);
+        } catch (e) { return ''; }
+    }
+
+    function capitalizar(t) {
+        return t ? t.charAt(0).toUpperCase() + t.slice(1) : t;
+    }
+
+    function listaEnEspanol(arr) {
+        if (arr.length === 1) return arr[0];
+        return arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1];
     }
 
     function processAI() {
@@ -742,7 +1036,8 @@
             return;
         }
 
-        const { titulo, ingredientes, pasos } = parsearReceta(texto);
+        const datos = parsearReceta(texto);
+        let { titulo, ingredientes, pasos, equipo, notas } = datos;
 
         if (!titulo && ingredientes.length === 0 && pasos.length === 0) {
             preview.innerHTML = '<div class="mt-4 p-4 bg-error-container text-on-error-container rounded-xl border border-error text-sm">'
@@ -751,10 +1046,32 @@
             return;
         }
 
+        // Si viene en inglés se traducen los términos de cocina. Los pasos
+        // son frases completas: el glosario ayuda, pero conviene revisarlos.
+        const enIngles = pareceIngles(texto);
+        if (enIngles) {
+            ingredientes = ingredientes.map(i => esSubtitulo(i) ? traducirTermino(i) : ordenarIngrediente(traducirTermino(i)));
+            equipo = equipo.map(e => capitalizar(traducirTermino(e)));
+            titulo = titulo ? traducirTermino(titulo) : titulo;
+        }
+
         const campoTitulo = document.getElementById('recipe-title');
+        const enlace = document.getElementById('recipe-url').value.trim();
+        // Muchos blogs no repiten el nombre en el texto copiado, pero sí
+        // lo llevan en la dirección: /super-fudgy-brownie-cookies/
+        if (!titulo && enlace) titulo = tituloDesdeEnlace(enlace, enIngles);
         if (titulo && !campoTitulo.value.trim()) campoTitulo.value = titulo;
         if (ingredientes.length) document.getElementById('recipe-ingredients').value = ingredientes.join('\n');
         if (pasos.length) document.getElementById('recipe-steps').value = pasos.join('\n');
+        if (equipo.length) document.getElementById('recipe-equipment').value = equipo.join('\n');
+
+        // Descripción, solo si el campo está vacío.
+        const campoDesc = document.getElementById('recipe-desc');
+        if (!campoDesc.value.trim()) {
+            const url = document.getElementById('recipe-url').value.trim();
+            const desc = componerDescripcion({ ...datos, ingredientes, equipo }, url);
+            if (desc) campoDesc.value = desc;
+        }
 
         const muestra = ingredientes.slice(0, 4).map(i =>
             '<li class="' + (esSubtitulo(i) ? 'font-bold list-none -ml-5 mt-1' : '') + '">' + escapeHtml(i) + '</li>'
@@ -769,7 +1086,17 @@
             + '<ul class="text-sm list-disc pl-5 text-on-surface-variant space-y-1">' + muestra
             + (ingredientes.length > 4 ? '<li class="text-xs italic">y ' + (ingredientes.length - 4) + ' más</li>' : '')
             + '</ul></div>'
-            + '<p class="text-xs text-on-surface-variant mt-3">Pasos detectados: <span class="font-bold">' + pasos.length + '</span></p>'
+            + '<div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-on-surface-variant">'
+            + '<span>Pasos: <span class="font-bold">' + pasos.length + '</span></span>'
+            + '<span>Equipo: <span class="font-bold">' + equipo.length + '</span></span>'
+            + (notas.length ? '<span>Notas: <span class="font-bold">' + notas.length + '</span></span>' : '')
+            + '</div>'
+            + (enIngles
+                ? '<div class="mt-3 p-3 bg-primary-fixed/25 border border-primary-fixed-dim rounded-lg text-xs text-on-surface-variant">'
+                  + '<span class="font-bold text-on-surface">Estaba en inglés.</span> Se tradujeron los ingredientes y el equipo, '
+                  + 'y se pasaron onzas, tazas y grados Fahrenheit a gramos, medidas locales y grados Celsius. '
+                  + '<span class="font-bold">La preparación quedó en su idioma original:</span> revísala antes de guardar.</div>'
+                : '')
             + '</div>'
             + '<button type="button" onclick="switchTab(\'basic\')" class="w-full text-center text-primary text-sm font-bold hover:underline">Revisar y corregir en «Detalles Básicos»</button>'
             + '</div>';
@@ -865,7 +1192,8 @@
             url: document.getElementById('recipe-url').value.trim(),
             illustration: document.getElementById('selected-illustration').value || '',
             ingredients: enLineas('recipe-ingredients'),
-            steps: enLineas('recipe-steps')
+            steps: enLineas('recipe-steps'),
+            equipment: enLineas('recipe-equipment')
         };
 
         const respaldo = recipes.map(r => ({ ...r }));
@@ -936,7 +1264,13 @@
             + '<div class="grid md:grid-cols-2 gap-8">'
             + '<section><h3 class="text-lg font-bold text-on-surface mb-3 pb-2 border-b border-surface-variant">Ingredientes</h3>' + ingredientes + '</section>'
             + '<section><h3 class="text-lg font-bold text-on-surface mb-3 pb-2 border-b border-surface-variant">Preparación</h3>' + pasos + '</section>'
-            + '</div>';
+            + '</div>'
+            + ((r.equipment || []).length
+                ? '<section class="mt-8"><h3 class="text-lg font-bold text-on-surface mb-3 pb-2 border-b border-surface-variant">Equipo</h3>'
+                  + '<ul class="flex flex-wrap gap-2">' + r.equipment.map(e =>
+                      '<li class="px-3 py-1 bg-surface-container rounded-full text-sm text-on-surface-variant border border-surface-variant">' + escapeHtml(e) + '</li>').join('')
+                  + '</ul></section>'
+                : '');
 
         document.getElementById('detail-edit-btn').setAttribute('onclick', "editRecipe('" + r.id + "')");
         document.getElementById('detail-print-btn').setAttribute('onclick', "printRecipe('" + r.id + "')");
@@ -1166,7 +1500,12 @@
             + '<div class="pagina-columnas">'
             + '<section><h3 class="pagina-seccion">Ingredientes</h3>' + ingredientes + '</section>'
             + '<section><h3 class="pagina-seccion">Preparación</h3>' + pasos + '</section>'
-            + '</div></article>';
+            + '</div>'
+            + ((r.equipment || []).length
+                ? '<div class="pagina-equipo"><span class="pagina-equipo-titulo">Equipo:</span> '
+                  + r.equipment.map(escapeHtml).join(' · ') + '</div>'
+                : '')
+            + '</article>';
     }
 
     function renderLibro() {
@@ -1669,6 +2008,11 @@ Ingredientes:
 <label class="block text-sm font-bold text-on-surface mb-1.5">Preparación</label>
 <p class="text-xs text-on-surface-variant mb-2">Un paso por línea.</p>
 <textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none text-on-surface resize-y text-sm" id="recipe-steps" placeholder="Precalentar el horno a 180 °C.&#10;Batir la mantequilla con el azúcar." rows="6"></textarea>
+</div>
+<div>
+<label class="block text-sm font-bold text-on-surface mb-1.5">Equipo necesario</label>
+<p class="text-xs text-on-surface-variant mb-2">Opcional. Uno por línea.</p>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none text-on-surface resize-y text-sm" id="recipe-equipment" placeholder="Batidora de pie&#10;Bandeja de horno&#10;Papel de horno" rows="3"></textarea>
 </div>
 </div>
 </div>

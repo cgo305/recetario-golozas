@@ -30,8 +30,17 @@ cuenta de GitHub. Viene desactivada.
 
 - **Añadir receta**: el botón `+`. Puedes escribir los datos a mano o pegar
   la descripción de un TikTok, un reel o un blog en la pestaña
-  «1. Pegar texto» y dejar que extraiga título, ingredientes y pasos.
-  Siempre puedes corregir lo que haya entendido mal.
+  «1. Pegar texto» y dejar que extraiga título, ingredientes, preparación
+  y equipo. Siempre puedes corregir lo que haya entendido mal.
+- **Recetas en inglés**: se traducen los ingredientes y el equipo, y se
+  convierten onzas a gramos, tazas y cucharadas a medidas locales, grados
+  Fahrenheit a Celsius y pulgadas a centímetros. **La preparación queda en
+  su idioma original**, porque traducir frases completas bien necesita un
+  servicio de traducción; el aviso en pantalla te lo recuerda.
+- **Descripción automática**: si no escribes una, se arma a partir de los
+  ingredientes principales, el equipo y el sitio de origen.
+- **Título desde el enlace**: si el texto pegado no trae nombre pero sí
+  pegaste el enlace original, se deduce de la dirección.
 - **Subtítulos dentro de los ingredientes**: escribe una línea que termine
   en dos puntos, por ejemplo `Para el relleno:`. Se muestra en negrita y
   no cuenta como ingrediente.
@@ -185,7 +194,7 @@ copia de los archivos para poder funcionar sin conexión. Si cambias
 `index.html`, `app.css` o cualquier icono, edita `sw.js` y sube el número:
 
 ```js
-const VERSION = 'golozas-v10';  // pásalo a 'golozas-v11'
+const VERSION = 'golozas-v11';  // pásalo a 'golozas-v12'
 ```
 
 Sin eso, la app instalada puede seguir mostrando la versión anterior. Las

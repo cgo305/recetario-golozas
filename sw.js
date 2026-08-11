@@ -6,7 +6,7 @@
 // Para publicar una versión nueva basta con subir el número de VERSION:
 // el navegador descarta el caché viejo y trae los archivos otra vez.
 
-const VERSION = 'golozas-v10';
+const VERSION = 'golozas-v11';
 
 const ARCHIVOS = [
   './',
