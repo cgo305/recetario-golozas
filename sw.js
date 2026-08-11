@@ -6,7 +6,7 @@
 // Para publicar una versión nueva basta con subir el número de VERSION:
 // el navegador descarta el caché viejo y trae los archivos otra vez.
 
-const VERSION = 'golozas-v6';
+const VERSION = 'golozas-v7';
 
 const ARCHIVOS = [
   './',
@@ -18,6 +18,10 @@ const ARCHIVOS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
+  './fonts/glass-antiqua-latin-691d92.woff2',
+  './fonts/glass-antiqua-latin-ext-558b0b.woff2',
+  './fonts/great-vibes-latin-7d348a.woff2',
+  './fonts/great-vibes-latin-ext-40c434.woff2',
   './fonts/lora-latin-5989f6.woff2',
   './fonts/lora-latin-831a90.woff2',
   './fonts/lora-latin-ext-2b409e.woff2',

@@ -21,6 +21,162 @@
        desde el código hace falta ganarle a esa regla. */
     .oculto-en-libro { display: none !important; }
 
+    /* =====================================================================
+       Libro de cocina: cada receta como una hoja de papel de acuarela.
+       Los colores van fijos (no variables): el papel sigue siendo papel
+       aunque la app esté en modo oscuro, como un libro real sobre la mesa.
+       ===================================================================== */
+    #cookbook { max-width: 880px; margin: 0 auto; }
+
+    .pagina-papel {
+      position: relative;
+      background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='linear' slope='0.045'/></feComponentTransfer></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>"),
+        radial-gradient(ellipse at 18% 12%, rgba(217, 165, 134, 0.10), transparent 55%),
+        radial-gradient(ellipse at 85% 90%, rgba(181, 206, 170, 0.10), transparent 55%),
+        #FDFCF7;
+      color: #3D3A38;
+      border-radius: 3px;
+      border: 1px solid rgba(61, 58, 56, 0.07);
+      box-shadow:
+        0 1px 2px rgba(61, 58, 56, 0.10),
+        0 14px 30px -14px rgba(61, 58, 56, 0.38);
+      padding: 3.25rem 2.5rem 2.75rem;
+      margin: 0 auto 3.25rem;
+    }
+    @media (min-width: 640px) { .pagina-papel { padding: 3.5rem 3.5rem 3rem; } }
+    article.pagina-papel:nth-of-type(odd)  { transform: rotate(0.35deg); }
+    article.pagina-papel:nth-of-type(even) { transform: rotate(-0.35deg); }
+
+    /* Cinta washi que sujeta la hoja */
+    .washi {
+      position: absolute;
+      top: -13px;
+      width: 108px;
+      height: 30px;
+      opacity: 0.95;
+      box-shadow: 0 1px 3px rgba(61, 58, 56, 0.18);
+      background-image: repeating-linear-gradient(115deg,
+        rgba(255, 255, 255, 0.16) 0 7px, transparent 7px 14px);
+    }
+    .washi-a { left: 9%;  transform: rotate(-4deg); background-color: rgba(181, 206, 170, 0.65); }
+    .washi-b { right: 9%; transform: rotate(3.5deg); background-color: rgba(217, 165, 134, 0.60); }
+
+    .pagina-numero {
+      position: absolute;
+      bottom: 1.1rem;
+      right: 1.6rem;
+      font-family: 'Glass Antiqua', serif;
+      font-size: 0.95rem;
+      color: rgba(61, 58, 56, 0.45);
+    }
+
+    .pagina-titulo {
+      font-family: 'Great Vibes', cursive;
+      font-weight: 400;
+      font-size: clamp(2.4rem, 6vw, 3.4rem);
+      line-height: 1.15;
+      text-align: center;
+      color: #72301c;
+      margin-bottom: 0.35rem;
+    }
+    .pagina-titulo-portada { font-size: clamp(3rem, 8vw, 4.2rem); }
+
+    .pagina-descripcion {
+      font-family: 'Glass Antiqua', serif;
+      font-size: 1.15rem;
+      text-align: center;
+      color: #5D6D54;
+      max-width: 34rem;
+      margin: 0 auto 0.9rem;
+    }
+
+    .pagina-meta {
+      font-family: 'Glass Antiqua', serif;
+      font-size: 1.02rem;
+      letter-spacing: 0.04em;
+      text-align: center;
+      color: rgba(61, 58, 56, 0.62);
+      border-top: 1px solid rgba(114, 48, 28, 0.18);
+      border-bottom: 1px solid rgba(114, 48, 28, 0.18);
+      padding: 0.45rem 0;
+      margin: 0 auto 1.8rem;
+      max-width: 30rem;
+    }
+
+    .foto-polaroid {
+      float: right;
+      width: 200px;
+      max-width: 45%;
+      background: #fff;
+      padding: 8px 8px 26px;
+      transform: rotate(2.2deg);
+      box-shadow: 0 2px 4px rgba(61, 58, 56, 0.14), 0 10px 18px -10px rgba(61, 58, 56, 0.35);
+      margin: 0.2rem 0 1rem 1.6rem;
+    }
+    .foto-polaroid img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+
+    .pagina-columnas { display: grid; gap: 1.9rem; }
+    @media (min-width: 640px) { .pagina-columnas { grid-template-columns: 5fr 7fr; gap: 2.4rem; } }
+
+    .pagina-seccion {
+      font-family: 'Glass Antiqua', serif;
+      font-size: 1.45rem;
+      color: #72301c;
+      display: inline-block;
+      border-bottom: 2px dotted rgba(114, 48, 28, 0.4);
+      padding-bottom: 2px;
+      margin-bottom: 0.8rem;
+    }
+
+    .pagina-lista, .pagina-pasos, .pagina-vacio { font-family: 'Glass Antiqua', serif; font-size: 1.12rem; line-height: 1.55; }
+    .pagina-lista { list-style: none; }
+    .pagina-lista li { padding-left: 1.1rem; position: relative; margin-bottom: 0.3rem; }
+    .pagina-lista li::before { content: '·'; position: absolute; left: 0.2rem; color: #72301c; font-weight: bold; }
+    .pagina-subtitulo {
+      font-weight: bold;
+      color: #3D3A38;
+      padding-left: 0 !important;
+      padding-top: 0.55rem;
+    }
+    .pagina-subtitulo::before { content: '' !important; }
+
+    .pagina-pasos { list-style: none; counter-reset: paso; }
+    .pagina-pasos li { counter-increment: paso; position: relative; padding-left: 2.1rem; margin-bottom: 0.65rem; }
+    .pagina-pasos li::before {
+      content: counter(paso);
+      position: absolute;
+      left: 0;
+      top: 0.1rem;
+      width: 1.45rem;
+      height: 1.45rem;
+      border: 1.5px solid rgba(114, 48, 28, 0.55);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      color: #72301c;
+    }
+    .pagina-vacio { font-style: italic; color: rgba(61, 58, 56, 0.5); }
+
+    /* Índice: la primera hoja del libro */
+    .pagina-indice { transform: rotate(-0.3deg); }
+    .indice-lista {
+      font-family: 'Glass Antiqua', serif;
+      font-size: 1.15rem;
+      list-style: decimal;
+      columns: 1;
+      column-gap: 3rem;
+      padding-left: 1.6rem;
+      margin-top: 1.4rem;
+      color: rgba(61, 58, 56, 0.75);
+    }
+    @media (min-width: 640px) { .indice-lista { columns: 2; } }
+    .indice-lista li { margin-bottom: 0.4rem; break-inside: avoid; }
+    .indice-lista button { color: #3D3A38; text-align: left; }
+    .indice-lista button:hover { color: #72301c; text-decoration: underline dotted; }
+
     /* Impresión: solo la ficha de la receta, en papel blanco. */
     @media print {
       body.imprimiendo > *:not(#recipe-detail-modal) { display: none !important; }
@@ -49,19 +205,25 @@
       body.imprimiendo-libro nav,
       body.imprimiendo-libro .no-print,
       body.imprimiendo-libro #recipe-grid { display: none !important; }
-      body.imprimiendo-libro .ficha-libro {
+      body.imprimiendo-libro .ficha-libro,
+      body.imprimiendo-libro .pagina-indice {
         break-inside: avoid;
         page-break-inside: avoid;
         break-after: page;
         page-break-after: always;
         border: none !important;
-        padding: 0 !important;
+        box-shadow: none !important;
+        transform: none !important;
+        background: none !important;
+        padding: 0.5cm 0 !important;
         margin-bottom: 0 !important;
       }
       body.imprimiendo-libro .ficha-libro:last-child {
         break-after: auto;
         page-break-after: auto;
       }
+      body.imprimiendo-libro .washi { display: none !important; }
+      body.imprimiendo-libro .foto-polaroid { transform: none !important; box-shadow: none !important; border: 1px solid #ddd; }
     }
 </style>
 <script>
@@ -937,29 +1099,34 @@
     }
 
     function fichaLibro(r, n) {
+        const foto = r.illustration
+            ? '<figure class="foto-polaroid"><img src="' + escapeHtml(r.illustration) + '" alt=""/></figure>'
+            : '';
+
         const ingredientes = (r.ingredients || []).length
-            ? '<ul class="space-y-1">' + r.ingredients.map(i => esSubtitulo(i)
-                ? '<li class="font-bold text-on-surface pt-2">' + escapeHtml(i) + '</li>'
-                : '<li class="text-on-surface-variant flex gap-2"><span class="text-primary">·</span><span>' + escapeHtml(i) + '</span></li>').join('') + '</ul>'
-            : '<p class="text-sm italic text-on-surface-variant">Sin ingredientes anotados.</p>';
+            ? '<ul class="pagina-lista">' + r.ingredients.map(i => esSubtitulo(i)
+                ? '<li class="pagina-subtitulo">' + escapeHtml(i) + '</li>'
+                : '<li>' + escapeHtml(i) + '</li>').join('') + '</ul>'
+            : '<p class="pagina-vacio">Sin ingredientes anotados.</p>';
 
         const pasos = (r.steps || []).length
-            ? '<ol class="space-y-2">' + r.steps.map((pp, k) =>
-                '<li class="flex gap-3 text-on-surface-variant"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold flex items-center justify-center">' + (k + 1) + '</span><span>' + escapeHtml(pp) + '</span></li>').join('') + '</ol>'
-            : '<p class="text-sm italic text-on-surface-variant">Sin preparación anotada.</p>';
+            ? '<ol class="pagina-pasos">' + r.steps.map(pp =>
+                '<li>' + escapeHtml(pp) + '</li>').join('') + '</ol>'
+            : '<p class="pagina-vacio">Sin preparación anotada.</p>';
 
-        return '<article class="ficha-libro bg-surface-container-lowest border border-surface-variant rounded-xl p-8 mb-8">'
-            + '<div class="flex items-baseline justify-between gap-4 mb-1">'
-            + '<h2 class="text-3xl font-bold text-on-surface">' + escapeHtml(r.title) + '</h2>'
-            + '<span class="text-xs uppercase tracking-wider text-outline">' + n + '</span></div>'
-            + (r.description ? '<p class="text-on-surface-variant mb-3">' + escapeHtml(r.description) + '</p>' : '')
-            + '<div class="flex flex-wrap gap-4 text-sm text-outline border-y border-surface-variant py-2 mb-5">'
-            + '<span>' + escapeHtml(r.time) + '</span><span>' + escapeHtml(r.difficulty) + '</span><span>' + escapeHtml(r.category) + '</span>'
-            + (r.favorite ? '<span class="text-primary font-bold">Favorita</span>' : '')
-            + '</div>'
-            + '<div class="grid md:grid-cols-2 gap-8">'
-            + '<section><h3 class="font-bold text-on-surface mb-2 pb-1 border-b border-surface-variant">Ingredientes</h3>' + ingredientes + '</section>'
-            + '<section><h3 class="font-bold text-on-surface mb-2 pb-1 border-b border-surface-variant">Preparación</h3>' + pasos + '</section>'
+        const meta = [r.time, r.difficulty, r.category].filter(Boolean).map(escapeHtml).join('  ·  ');
+
+        return '<article class="ficha-libro pagina-papel">'
+            + '<span class="washi washi-a"></span>'
+            + '<span class="washi washi-b"></span>'
+            + '<div class="pagina-numero">' + n + '</div>'
+            + '<h2 class="pagina-titulo">' + escapeHtml(r.title) + '</h2>'
+            + (r.description ? '<p class="pagina-descripcion">' + escapeHtml(r.description) + '</p>' : '')
+            + '<div class="pagina-meta">' + meta + (r.favorite ? '  ·  ♥' : '') + '</div>'
+            + foto
+            + '<div class="pagina-columnas">'
+            + '<section><h3 class="pagina-seccion">Ingredientes</h3>' + ingredientes + '</section>'
+            + '<section><h3 class="pagina-seccion">Preparación</h3>' + pasos + '</section>'
             + '</div></article>';
     }
 
@@ -974,18 +1141,19 @@
         }
 
         const indice = lista.map((r, i) =>
-            '<li><button type="button" class="text-left hover:text-primary transition-colors" onclick="document.querySelectorAll(\'.ficha-libro\')[' + i + '].scrollIntoView({behavior:\'smooth\'})">'
+            '<li><button type="button" onclick="document.querySelectorAll(\'.ficha-libro\')[' + i + '].scrollIntoView({behavior:\'smooth\'})">'
             + escapeHtml(r.title) + '</button></li>').join('');
 
         libro.innerHTML =
-            '<div class="no-print mb-8 flex flex-wrap items-center justify-between gap-4">'
-            + '<div><h1 class="text-4xl font-bold text-on-surface">Libro de cocina</h1>'
-            + '<p class="text-on-surface-variant">' + lista.length + ' recetas, en orden alfabético.</p></div>'
+            '<div class="no-print mb-8 flex justify-end">'
             + '<button type="button" onclick="imprimirLibro()" class="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary/90 shadow-md transition-all flex items-center gap-2">'
             + '<span class="material-symbols-outlined text-[20px]">print</span> Imprimir el libro</button></div>'
-            + '<div class="no-print mb-10 p-6 bg-surface-container-low border border-surface-variant rounded-xl">'
-            + '<h2 class="font-bold text-on-surface mb-3 uppercase tracking-wider text-sm">Índice</h2>'
-            + '<ol class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-1 list-decimal pl-5 text-on-surface-variant">' + indice + '</ol></div>'
+            + '<div class="pagina-papel pagina-indice">'
+            + '<span class="washi washi-a"></span>'
+            + '<h1 class="pagina-titulo pagina-titulo-portada">Libro de cocina</h1>'
+            + '<p class="pagina-descripcion">' + lista.length + (lista.length === 1 ? ' receta' : ' recetas') + ', en orden alfabético</p>'
+            + '<ol class="indice-lista">' + indice + '</ol>'
+            + '</div>'
             + lista.map((r, i) => fichaLibro(r, i + 1)).join('');
     }
 
@@ -1283,7 +1451,7 @@
 </button>
 <!-- BottomNavBar (Mobile) -->
 <nav class="no-print bg-surface-container-lowest border-t border-surface-variant shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden">
-<button class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" onclick="filtrarCategoria('All')" type="button">
+<button class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" onclick="mostrarVista('lista')" type="button">
 <span class="material-symbols-outlined">restaurant_menu</span>
 <span class="text-[10px] mt-1 uppercase font-bold">Recetas</span>
 </button>
@@ -1291,9 +1459,13 @@
 <span class="material-symbols-outlined">add</span>
 <span class="text-[10px] mt-1 uppercase font-bold">Añadir</span>
 </button>
-<button class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" onclick="filtrarCategoria('Favoritas')" type="button">
+<button class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" onclick="mostrarVista('favoritas')" type="button">
 <span class="material-symbols-outlined">favorite</span>
 <span class="text-[10px] mt-1 uppercase font-bold">Favoritas</span>
+</button>
+<button class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" onclick="mostrarVista('libro')" type="button">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="text-[10px] mt-1 uppercase font-bold">Libro</span>
 </button>
 </nav>
 <!-- Sync Config Modal -->
