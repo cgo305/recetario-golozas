@@ -1,0 +1,3 @@
+# Este recetario es personal: no se quiere en buscadores.
+User-agent: *
+Disallow: /

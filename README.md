@@ -18,6 +18,7 @@ cuenta de GitHub. Viene desactivada.
 - [Cómo usarlo](#cómo-usarlo)
 - [Instalarlo en el iPhone](#instalarlo-en-el-iphone)
 - [Respaldos: lo más importante](#respaldos-lo-más-importante)
+- [Sobre la privacidad del sitio](#sobre-la-privacidad-del-sitio)
 - [Sincronizar entre dispositivos](#sincronizar-entre-dispositivos)
 - [Cómo hacer cambios y volver a publicar](#cómo-hacer-cambios-y-volver-a-publicar)
 - [Qué hay dentro de cada archivo](#qué-hay-dentro-de-cada-archivo)
@@ -113,6 +114,24 @@ mantengan iguales solos, mira la sección siguiente.
 
 ---
 
+## Sobre la privacidad del sitio
+
+El sitio es público, pero **solo contiene la aplicación**: el código, los
+estilos y las tipografías. Tus recetas no están ahí: viven en la base de
+datos del navegador de cada dispositivo. Quien abra la dirección ve la app
+con las recetas de ejemplo, no las tuyas.
+
+Además lleva `robots.txt` y etiquetas `noindex`, así que no aparece en
+buscadores. Para llegar hay que conocer la dirección exacta.
+
+> **Antes de mover el sitio a otra dirección**, ten en cuenta que el
+> navegador guarda los datos atados al dominio. Si cambias de
+> `cgo305.github.io` a otro, la app aparecerá vacía y tus recetas
+> quedarán en el dominio anterior. Si algún día lo mueves: descarga el
+> respaldo (⬇) **antes**, y restáuralo (⬆) en la dirección nueva.
+
+---
+
 ## Sincronizar entre dispositivos
 
 Opcional. Si la activas, las recetas se guardan además en un **gist
@@ -194,7 +213,7 @@ copia de los archivos para poder funcionar sin conexión. Si cambias
 `index.html`, `app.css` o cualquier icono, edita `sw.js` y sube el número:
 
 ```js
-const VERSION = 'golozas-v12';  // pásalo a 'golozas-v13'
+const VERSION = 'golozas-v13';  // pásalo a 'golozas-v14'
 ```
 
 Sin eso, la app instalada puede seguir mostrando la versión anterior. Las
