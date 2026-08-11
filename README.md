@@ -4,8 +4,12 @@ Recetario personal. Es un sitio estático: se abre en cualquier navegador,
 se instala en el teléfono como una app y funciona sin conexión.
 
 Las recetas se guardan **en tu propio dispositivo**, en la base de datos
-del navegador (IndexedDB). No hay servidor, no hay cuenta y nadie más
-puede verlas.
+del navegador (IndexedDB). Sin configurar nada no hay servidor ni cuenta:
+nadie más puede verlas.
+
+Si quieres que el teléfono y el computador se mantengan iguales, hay una
+[sincronización opcional](#sincronizar-entre-dispositivos) que usa tu
+cuenta de GitHub. Viene desactivada.
 
 ---
 
@@ -168,7 +172,7 @@ copia de los archivos para poder funcionar sin conexión. Si cambias
 `index.html`, `app.css` o cualquier icono, edita `sw.js` y sube el número:
 
 ```js
-const VERSION = 'golozas-v3';   // pásalo a 'golozas-v4'
+const VERSION = 'golozas-v5';   // pásalo a 'golozas-v6'
 ```
 
 Sin eso, la app instalada puede seguir mostrando la versión anterior. Las
