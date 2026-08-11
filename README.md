@@ -51,8 +51,10 @@ Arriba hay tres vistas:
   con cinta washi, título caligráfico (Great Vibes) y texto manuscrito
   (Glass Antiqua), en orden alfabético y con índice. Las hojas se ven en
   papel crema aunque la app esté en modo oscuro, como un libro real. El
-  botón «Imprimir el libro» las manda a papel de una vez, una receta por
-  hoja.
+  botón «Imprimir el libro» las manda a papel de una vez: **cada receta
+  empieza en una hoja nueva**, con su foto si la tiene. Al imprimir se
+  quitan las sombras, la inclinación y la cinta, y el fondo va en blanco
+  para ahorrar tinta.
 
 ---
 
@@ -183,7 +185,7 @@ copia de los archivos para poder funcionar sin conexión. Si cambias
 `index.html`, `app.css` o cualquier icono, edita `sw.js` y sube el número:
 
 ```js
-const VERSION = 'golozas-v7';   // pásalo a 'golozas-v8'
+const VERSION = 'golozas-v10';  // pásalo a 'golozas-v11'
 ```
 
 Sin eso, la app instalada puede seguir mostrando la versión anterior. Las

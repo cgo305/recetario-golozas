@@ -179,10 +179,22 @@
 
     /* Impresión: solo la ficha de la receta, en papel blanco. */
     @media print {
+      /* Nada anclado a la pantalla se imprime: botón flotante, barra
+         inferior, ventanas emergentes y avisos. */
+      .no-print,
+      [class*="fixed"] { display: none !important; }
+
+      /* El papel de verdad ya es papel: se imprime sobre blanco, que
+         además ahorra tinta. */
+      html, body { background: #fff !important; }
+
       body.imprimiendo > *:not(#recipe-detail-modal) { display: none !important; }
+      body.imprimiendo #sync-modal,
+      body.imprimiendo #add-recipe-modal,
+      body.imprimiendo #error-toast { display: none !important; }
       body.imprimiendo #recipe-detail-modal {
         position: static !important;
-        display: block !important;
+        display: block !important;   /* gana a la regla de arriba */
         background: none !important;
         backdrop-filter: none !important;
         padding: 0 !important;
@@ -205,25 +217,52 @@
       body.imprimiendo-libro nav,
       body.imprimiendo-libro .no-print,
       body.imprimiendo-libro #recipe-grid { display: none !important; }
+      /* Los saltos de página no funcionan dentro de contenedores flex,
+         y el cuerpo y el contenedor principal lo son. Al imprimir, esa
+         cadena concreta de ancestros pasa a bloque para que el navegador
+         pueda cortar donde se le pide y no a mitad de un título. */
+      body.imprimiendo-libro,
+      body.imprimiendo-libro #layout,
+      body.imprimiendo-libro main,
+      body.imprimiendo-libro #cookbook { display: block !important; }
+
+      /* Al imprimir el libro solo existe el contenido: se oculta todo
+         hermano del contenedor principal (encabezado, botón flotante,
+         barra inferior, ventanas emergentes y avisos). */
+      body.imprimiendo-libro > *:not(#layout) { display: none !important; }
+
       body.imprimiendo-libro .ficha-libro,
       body.imprimiendo-libro .pagina-indice {
-        break-inside: avoid;
-        page-break-inside: avoid;
-        break-after: page;
-        page-break-after: always;
         border: none !important;
         box-shadow: none !important;
         transform: none !important;
         background: none !important;
-        padding: 0.5cm 0 !important;
-        margin-bottom: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
       }
-      body.imprimiendo-libro .ficha-libro:last-child {
-        break-after: auto;
-        page-break-after: auto;
+      /* Cada receta parte en una hoja nueva. El índice queda en la primera. */
+      body.imprimiendo-libro .ficha-libro {
+        break-before: page;
+        page-break-before: always;
       }
       body.imprimiendo-libro .washi { display: none !important; }
-      body.imprimiendo-libro .foto-polaroid { transform: none !important; box-shadow: none !important; border: 1px solid #ddd; }
+      body.imprimiendo-libro .pagina-numero { display: none !important; }
+      body.imprimiendo-libro .foto-polaroid {
+        transform: none !important;
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+        display: block;
+      }
+      body.imprimiendo-libro .foto-polaroid img {
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+      /* Que un salto natural no separe el título de su receta. */
+      body.imprimiendo-libro .pagina-titulo,
+      body.imprimiendo-libro .pagina-seccion {
+        break-after: avoid;
+        page-break-after: avoid;
+      }
     }
 </style>
 <script>
@@ -1393,7 +1432,7 @@
 </div>
 </header>
 <!-- Main Layout -->
-<div class="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 flex flex-col lg:flex-row gap-8 py-8">
+<div class="flex-1 max-w-7xl mx-auto w-full px-4 md:px-8 flex flex-col lg:flex-row gap-8 py-8" id="layout">
 <!-- SideNavBar (Left) -->
 <aside class="w-full lg:w-64 flex-shrink-0 flex flex-col gap-2 z-10 hidden md:flex">
 <div class="mb-6">
