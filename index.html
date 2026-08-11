@@ -285,6 +285,8 @@
         const receta = recipes.find(r => r.id === id);
         if (!receta) return;
         receta.favorite = !receta.favorite;
+        receta.updatedAt = ahora();
+        sincronizarSiCorresponde();
         try {
             await saveRecipes();
         } catch (e) {
@@ -333,7 +335,7 @@
         container.innerHTML = '';
 
         const q = searchQuery.trim().toLowerCase();
-        let filtered = recipes.filter(r => {
+        let filtered = recetasVisibles().filter(r => {
             const matchesCategory = currentCategory === 'All'
                 || (currentCategory === 'Favoritas' ? !!r.favorite : r.category === currentCategory);
             if (!q) return matchesCategory;
@@ -425,15 +427,25 @@
 
     async function deleteRecipe(id) {
         if (!confirm('¿Seguro que quieres eliminar esta receta? No se puede deshacer.')) return;
-        const respaldo = recipes;
-        recipes = recipes.filter(r => r.id !== id);
+        const i = recipes.findIndex(r => r.id === id);
+        if (i === -1) return;
+        const respaldo = { ...recipes[i] };
+        // No se borra de verdad: se marca. Si se quitara del listado, al
+        // sincronizar volvería a aparecer desde el otro dispositivo.
+        recipes[i] = { ...recipes[i], deleted: true, updatedAt: ahora() };
         try {
             await saveRecipes();
         } catch (e) {
-            recipes = respaldo; // si no se pudo guardar, no perdemos nada
+            recipes[i] = respaldo;
         }
         renderRecipes();
+        sincronizarSiCorresponde();
     }
+
+    function ahora() { return new Date().toISOString(); }
+
+    // Las marcadas como borradas no se muestran en ninguna parte.
+    function recetasVisibles() { return recipes.filter(r => !r.deleted); }
 
     // ---------------------------------------------------------------
     // Lectura de recetas pegadas desde TikTok, Instagram o un blog.
@@ -636,13 +648,14 @@
         if (editandoId) {
             const i = recipes.findIndex(r => r.id === editandoId);
             if (i === -1) { showError('La receta que editabas ya no existe.'); return; }
-            recipes[i] = { ...recipes[i], ...datos, updatedAt: new Date().toISOString() };
+            recipes[i] = { ...recipes[i], ...datos, updatedAt: ahora() };
         } else {
             recipes = [{
                 id: Date.now().toString(),
                 featured: false,
                 favorite: false,
-                createdAt: new Date().toISOString(),
+                createdAt: ahora(),
+                updatedAt: ahora(),
                 ...datos
             }, ...recipes];
         }
@@ -657,6 +670,7 @@
         }
         renderRecipes();
         cerrarModal();
+        sincronizarSiCorresponde();
     }
 
     // ---------------------------------------------------------------
@@ -745,7 +759,7 @@
             formato: 'golozas-recetario',
             version: 1,
             exportado: new Date().toISOString(),
-            recetas: recipes
+            recetas: recetasVisibles()
         };
         const blob = new Blob([JSON.stringify(datos, null, 2)], { type: 'application/json' });
         const a = document.createElement('a');
@@ -840,14 +854,199 @@
         // Form
         document.getElementById('recipe-form').addEventListener('submit', handleFormSubmit);
 
+        // Estado inicial del botón de sincronización, y primera pasada.
+        if (syncActiva()) {
+            estadoSync('Sincronizando…', 'trabajando');
+            sincronizar({ silencioso: true });
+        } else {
+            estadoSync('Sincronización desactivada', 'espera');
+        }
+        window.addEventListener('online', () => sincronizar({ silencioso: true }));
+
         // Escape cierra lo que esté abierto.
         document.addEventListener('keydown', (e) => {
             if (e.key !== 'Escape') return;
-            if (!document.getElementById('recipe-detail-modal').classList.contains('hidden')) cerrarDetalle();
+            if (!document.getElementById('sync-modal').classList.contains('hidden')) cerrarConfigSync();
+            else if (!document.getElementById('recipe-detail-modal').classList.contains('hidden')) cerrarDetalle();
             else if (!document.getElementById('add-recipe-modal').classList.contains('hidden')) cerrarModal();
         });
     }
 
+
+    // ---------------------------------------------------------------
+    // Sincronización entre dispositivos con un Gist privado de GitHub
+    //
+    // El token se guarda en este navegador y debe tener SOLO el permiso
+    // "gist": así no puede tocar repositorios ni el resto de la cuenta.
+    // El gist es privado, que en GitHub significa "no listado", no
+    // cifrado: quien tenga la URL puede leerlo.
+    // ---------------------------------------------------------------
+    const ARCHIVO_GIST = 'recetario-golozas.json';
+    let sincronizando = false;
+    let temporizadorSync = null;
+
+    const cfgSync = {
+        get token() { try { return localStorage.getItem('golozas_gist_token') || ''; } catch (e) { return ''; } },
+        set token(v) { try { localStorage.setItem('golozas_gist_token', v); } catch (e) {} },
+        get gistId() { try { return localStorage.getItem('golozas_gist_id') || ''; } catch (e) { return ''; } },
+        set gistId(v) { try { localStorage.setItem('golozas_gist_id', v); } catch (e) {} },
+        get ultima() { try { return localStorage.getItem('golozas_sync_ultima') || ''; } catch (e) { return ''; } },
+        set ultima(v) { try { localStorage.setItem('golozas_sync_ultima', v); } catch (e) {} }
+    };
+
+    function syncActiva() { return !!cfgSync.token; }
+
+    async function apiGitHub(ruta, opciones = {}) {
+        const r = await fetch('https://api.github.com' + ruta, {
+            ...opciones,
+            headers: {
+                'Authorization': 'Bearer ' + cfgSync.token,
+                'Accept': 'application/vnd.github+json',
+                'Content-Type': 'application/json',
+                ...(opciones.headers || {})
+            }
+        });
+        if (!r.ok) {
+            let detalle = '';
+            try { detalle = (await r.json()).message || ''; } catch (e) {}
+            if (r.status === 401) throw new Error('El token no es válido o fue revocado.');
+            if (r.status === 403) throw new Error('GitHub rechazó la petición. ' + detalle);
+            if (r.status === 404) throw new Error('No se encontró el gist. Puede que lo hayan borrado.');
+            throw new Error('GitHub respondió ' + r.status + '. ' + detalle);
+        }
+        return r.json();
+    }
+
+    // Fusiona por id: gana la versión modificada más recientemente. Una
+    // receta solo desaparece si el lado ganador la tiene marcada como
+    // borrada, así que nunca se pierde algo por sincronizar.
+    function fusionar(locales, remotas) {
+        const porId = new Map();
+        const fecha = r => r.updatedAt || r.createdAt || '';
+        for (const r of [...remotas, ...locales]) {
+            if (!r || !r.id) continue;
+            const previa = porId.get(r.id);
+            if (!previa || fecha(r) >= fecha(previa)) porId.set(r.id, r);
+        }
+        return [...porId.values()];
+    }
+
+    async function leerGist() {
+        const g = await apiGitHub('/gists/' + cfgSync.gistId);
+        const archivo = g.files && g.files[ARCHIVO_GIST];
+        if (!archivo) return [];
+        // Si supera 1 MB, GitHub no manda el contenido y hay que ir al raw.
+        const texto = archivo.truncated
+            ? await (await fetch(archivo.raw_url)).text()
+            : archivo.content;
+        const datos = JSON.parse(texto);
+        return Array.isArray(datos) ? datos : (datos.recetas || []);
+    }
+
+    async function escribirGist(lista) {
+        const cuerpo = {
+            description: 'Recetario GOlozas — respaldo sincronizado',
+            files: { [ARCHIVO_GIST]: { content: JSON.stringify({
+                formato: 'golozas-recetario', version: 1,
+                actualizado: ahora(), recetas: lista
+            }, null, 1) } }
+        };
+        if (cfgSync.gistId) {
+            await apiGitHub('/gists/' + cfgSync.gistId, { method: 'PATCH', body: JSON.stringify(cuerpo) });
+        } else {
+            const creado = await apiGitHub('/gists', {
+                method: 'POST',
+                body: JSON.stringify({ ...cuerpo, public: false })
+            });
+            cfgSync.gistId = creado.id;
+        }
+    }
+
+    async function sincronizar({ silencioso = false } = {}) {
+        if (!syncActiva() || sincronizando) return;
+        if (!navigator.onLine) {
+            if (!silencioso) estadoSync('Sin conexión. Se sincronizará al volver.', 'espera');
+            return;
+        }
+        sincronizando = true;
+        estadoSync('Sincronizando…', 'trabajando');
+        try {
+            const remotas = cfgSync.gistId ? await leerGist() : [];
+            const fusionadas = fusionar(recipes, remotas);
+
+            recipes = fusionadas;
+            await saveRecipes();
+            await escribirGist(fusionadas);
+
+            cfgSync.ultima = ahora();
+            renderRecipes();
+            estadoSync('Al día', 'ok');
+        } catch (err) {
+            estadoSync('No se pudo sincronizar', 'error');
+            if (!silencioso) showError('No se pudo sincronizar: ' + err.message, err);
+        } finally {
+            sincronizando = false;
+        }
+    }
+
+    // Tras un cambio se espera un poco, para no subir en cada tecla.
+    function sincronizarSiCorresponde() {
+        if (!syncActiva()) return;
+        clearTimeout(temporizadorSync);
+        temporizadorSync = setTimeout(() => sincronizar({ silencioso: true }), 2500);
+    }
+
+    function estadoSync(texto, tipo) {
+        const b = document.getElementById('sync-btn');
+        const icono = document.getElementById('sync-icon');
+        if (!b || !icono) return;
+        b.title = texto;
+        b.classList.toggle('animate-spin', tipo === 'trabajando');
+        icono.textContent = tipo === 'error' ? 'sync_problem'
+                          : tipo === 'espera' ? 'cloud_off'
+                          : 'cloud_sync';
+        b.classList.toggle('text-error', tipo === 'error');
+        b.classList.toggle('text-primary', tipo !== 'error');
+    }
+
+    function abrirConfigSync() {
+        const m = document.getElementById('sync-modal');
+        document.getElementById('sync-token').value = cfgSync.token;
+        document.getElementById('sync-gist').value = cfgSync.gistId;
+        const info = document.getElementById('sync-estado-texto');
+        info.textContent = syncActiva()
+            ? (cfgSync.ultima ? 'Última sincronización: ' + new Date(cfgSync.ultima).toLocaleString('es-CL') : 'Configurada, aún sin sincronizar.')
+            : 'Desactivada. Tus recetas solo están en este dispositivo.';
+        m.classList.remove('hidden');
+        m.classList.add('flex');
+    }
+
+    function cerrarConfigSync() {
+        const m = document.getElementById('sync-modal');
+        m.classList.add('hidden');
+        m.classList.remove('flex');
+    }
+
+    async function guardarConfigSync() {
+        const token = document.getElementById('sync-token').value.trim();
+        const gist = document.getElementById('sync-gist').value.trim();
+        cfgSync.token = token;
+        cfgSync.gistId = gist;
+        cerrarConfigSync();
+        if (token) await sincronizar();
+        else estadoSync('Sincronización desactivada', 'espera');
+    }
+
+    function desactivarSync() {
+        if (!confirm('Se quitará el token de este dispositivo. Tus recetas seguirán aquí y el gist no se borra. ¿Continuar?')) return;
+        try {
+            localStorage.removeItem('golozas_gist_token');
+            localStorage.removeItem('golozas_gist_id');
+            localStorage.removeItem('golozas_sync_ultima');
+        } catch (e) {}
+        cerrarConfigSync();
+        estadoSync('Sincronización desactivada', 'espera');
+    }
 
     // ---------------------------------------------------------------
     // Service worker: permite abrir la app sin conexión.
@@ -887,6 +1086,9 @@
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
 <input class="pl-9 pr-4 py-2 bg-surface-container-lowest border border-surface-variant rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-48 transition-all" id="search-input" placeholder="Buscar recetas..." type="text"/>
 </div>
+<button aria-label="Sincronizar entre dispositivos" class="p-2 text-primary hover:bg-surface-container rounded-full transition-colors" id="sync-btn" onclick="abrirConfigSync()" title="Sincronizar entre dispositivos" type="button">
+<span class="material-symbols-outlined" id="sync-icon">cloud_off</span>
+</button>
 <button aria-label="Cambiar entre modo claro y oscuro" class="p-2 text-primary hover:bg-surface-container rounded-full transition-colors" onclick="toggleTheme()" title="Modo claro u oscuro" type="button">
 <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
 </button>
@@ -970,6 +1172,51 @@
 <span class="text-[10px] mt-1 uppercase font-bold">Favoritas</span>
 </button>
 </nav>
+<!-- Sync Config Modal -->
+<div class="hidden fixed inset-0 z-[110] items-center justify-center bg-black/60 backdrop-blur-sm p-4" id="sync-modal" onclick="if(event.target===this)cerrarConfigSync()">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-2xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-surface-variant">
+<div class="flex justify-between items-start p-6 border-b border-surface-variant bg-surface">
+<div>
+<h2 class="text-2xl text-primary font-bold">Sincronizar entre dispositivos</h2>
+<p class="text-sm text-on-surface-variant mt-1" id="sync-estado-texto"></p>
+</div>
+<button aria-label="Cerrar" class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-colors" onclick="cerrarConfigSync()" type="button">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="overflow-y-auto p-6 flex-1 space-y-5">
+<div class="bg-primary-fixed/20 border border-primary-fixed-dim rounded-xl p-4 text-sm text-on-surface-variant space-y-2">
+<p class="font-bold text-on-surface">Cómo obtener el token</p>
+<p>1. Entra a <span class="font-bold">github.com/settings/tokens</span> y elige «Generate new token (classic)».</p>
+<p>2. Marca <span class="font-bold">únicamente</span> el permiso <span class="font-mono bg-surface-container px-1 rounded">gist</span>. No marques <span class="font-mono bg-surface-container px-1 rounded">repo</span>: con solo «gist» este token no puede tocar tus repositorios.</p>
+<p>3. Cópialo y pégalo aquí abajo. Repite lo mismo en tu otro dispositivo con el mismo token.</p>
+</div>
+<div>
+<label class="block text-sm font-bold text-on-surface mb-1.5" for="sync-token">Token de GitHub (permiso «gist»)</label>
+<input autocomplete="off" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none text-on-surface font-mono text-sm" id="sync-token" placeholder="ghp_..." type="password"/>
+<p class="text-xs text-on-surface-variant mt-1.5">Se guarda solo en este navegador. Quien pueda usar este dispositivo podrá verlo.</p>
+</div>
+<div>
+<label class="block text-sm font-bold text-on-surface mb-1.5" for="sync-gist">Identificador del gist</label>
+<input autocomplete="off" class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none text-on-surface font-mono text-sm" id="sync-gist" placeholder="Se crea solo la primera vez" type="text"/>
+<p class="text-xs text-on-surface-variant mt-1.5">Déjalo vacío en el primer dispositivo: se crea automáticamente. Después copia aquí ese mismo identificador en los demás.</p>
+</div>
+<div class="bg-surface-container-low border border-surface-variant rounded-xl p-4 text-xs text-on-surface-variant">
+<p class="font-bold text-on-surface mb-1">Qué significa para tu privacidad</p>
+<p>El gist es privado, es decir, no aparece en búsquedas. Pero no está cifrado: quien tenga su dirección puede leerlo, y GitHub también. Si prefieres que nadie más pueda leerlas, pídeme la versión cifrada.</p>
+</div>
+</div>
+<div class="p-4 sm:p-6 border-t border-surface-variant flex justify-between gap-3 bg-surface">
+<button class="px-4 py-2.5 text-error hover:bg-error-container rounded-lg font-bold transition-colors text-sm" onclick="desactivarSync()" type="button">Desactivar</button>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 text-on-surface-variant hover:bg-surface-container rounded-lg font-bold transition-colors" onclick="cerrarConfigSync()" type="button">Cancelar</button>
+<button class="px-6 py-2.5 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary/90 shadow-md transition-all flex items-center gap-2" onclick="guardarConfigSync()" type="button">
+<span class="material-symbols-outlined text-[20px]">cloud_sync</span> Guardar y sincronizar
+</button>
+</div>
+</div>
+</div>
+</div>
 <!-- Recipe Detail Modal -->
 <div class="hidden fixed inset-0 z-[90] items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6" id="recipe-detail-modal" onclick="if(event.target===this)cerrarDetalle()">
 <div class="bg-surface-container-lowest w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden border border-surface-variant" id="recipe-detail-card">

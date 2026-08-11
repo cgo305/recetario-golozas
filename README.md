@@ -14,6 +14,7 @@ puede verlas.
 - [Cómo usarlo](#cómo-usarlo)
 - [Instalarlo en el iPhone](#instalarlo-en-el-iphone)
 - [Respaldos: lo más importante](#respaldos-lo-más-importante)
+- [Sincronizar entre dispositivos](#sincronizar-entre-dispositivos)
 - [Cómo hacer cambios y volver a publicar](#cómo-hacer-cambios-y-volver-a-publicar)
 - [Qué hay dentro de cada archivo](#qué-hay-dentro-de-cada-archivo)
 - [Regenerar los estilos y los iconos](#regenerar-los-estilos-y-los-iconos)
@@ -81,9 +82,57 @@ que ya tienes. Nunca borra nada. Al terminar te dice cuántas entraron.
 2. Pásate el archivo (correo, AirDrop, lo que prefieras).
 3. En el dispositivo nuevo: abre el sitio y usa ⬆ para cargarlo.
 
-Los dos dispositivos quedan iguales en ese momento, pero **no se
-sincronizan solos**: si después añades una receta en el teléfono, no
-aparece en el computador hasta que repitas el respaldo.
+Los dos dispositivos quedan iguales en ese momento. Si quieres que se
+mantengan iguales solos, mira la sección siguiente.
+
+---
+
+## Sincronizar entre dispositivos
+
+Opcional. Si la activas, las recetas se guardan además en un **gist
+privado de tu cuenta de GitHub**, y el teléfono y el computador se
+mantienen al día solos.
+
+### Cómo activarla
+
+1. Entra a <https://github.com/settings/tokens> y elige
+   «Generate new token (classic)».
+2. Marca **únicamente** el permiso `gist`. **No marques `repo`.** Con solo
+   `gist`, ese token no puede tocar tus repositorios ni el resto de tu
+   cuenta: si alguna vez se filtrara, el daño se limita a tus gists.
+3. Copia el token, abre la app y toca el icono de la nube ☁ arriba a la
+   derecha. Pega el token y guarda. Deja vacío el campo del identificador:
+   se crea solo.
+4. Abre la app en el otro dispositivo, pega **el mismo token** y **el
+   identificador del gist** que aparece ahora en el primero.
+
+A partir de ahí sincroniza sola: al abrir la app, después de cada cambio
+y cuando vuelve la conexión. El icono de la nube te dice cómo va.
+
+### Cómo resuelve los conflictos
+
+Al sincronizar no se pisa nada: se fusionan las dos listas por receta y,
+si una está en ambos lados, gana la editada más recientemente. Una receta
+solo desaparece si de verdad la borraste, y ese borrado se propaga en vez
+de reaparecer al sincronizar desde el otro dispositivo.
+
+El único caso que puede perder algo es editar **la misma receta** en los
+dos dispositivos sin sincronizar entremedio: ahí gana la más reciente.
+
+### Qué significa para tu privacidad
+
+El gist es **privado**, es decir, no aparece en búsquedas ni en tu perfil.
+Pero **no está cifrado**: quien tenga su dirección puede leerlo, y GitHub
+también. Son recetas, no datos sensibles, pero conviene saberlo.
+
+Si prefieres que nadie más pueda leerlas, se puede añadir cifrado en el
+dispositivo con una frase secreta. Ten en cuenta que si olvidas esa frase,
+las recetas cifradas no se recuperan.
+
+### Desactivarla
+
+En la misma ventana, «Desactivar». Se quita el token de ese dispositivo.
+Tus recetas siguen ahí y el gist no se borra.
 
 ---
 
@@ -175,7 +224,13 @@ cerrar y libera espacio.
 
 **Se ven las recetas de ejemplo y no las mías.**
 Estás en otro navegador o en otro dispositivo: los datos no se comparten
-entre ellos. Restaura tu respaldo con el botón ⬆.
+entre ellos salvo que actives la sincronización. Restaura tu respaldo con
+el botón ⬆.
+
+**El icono de la nube aparece con un aspa.**
+La sincronización falló. Las causas habituales son que el token caducó o
+fue revocado, o que no tiene el permiso `gist`. Toca el icono y pega un
+token nuevo. Tus recetas no corren peligro: siguen en el dispositivo.
 
 **Las fotos ocupan mucho.**
 Se reducen automáticamente a 1200 px antes de guardarse. Aun así, si
