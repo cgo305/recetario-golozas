@@ -1,0 +1,20 @@
+{
+  "name": "GOlozas · Recetario",
+  "short_name": "GOlozas",
+  "description": "Mi recetario personal: recetas, fotos y favoritas, siempre disponibles.",
+  "lang": "es-CL",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf9f4",
+  "theme_color": "#72301c",
+  "categories": ["food", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
