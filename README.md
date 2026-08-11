@@ -217,7 +217,7 @@ copia de los archivos para poder funcionar sin conexión. Si cambias
 `index.html`, `app.css` o cualquier icono, edita `sw.js` y sube el número:
 
 ```js
-const VERSION = 'golozas-v14';  // pásalo a 'golozas-v15'
+const VERSION = 'golozas-v15';  // pásalo a 'golozas-v16'
 ```
 
 Sin eso, la app instalada puede seguir mostrando la versión anterior. Las
