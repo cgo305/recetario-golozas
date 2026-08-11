@@ -17,6 +17,10 @@
 <style>
     body { font-family: 'Lora', serif; }
 
+    /* La barra lateral se declara como "hidden md:flex"; para esconderla
+       desde el código hace falta ganarle a esa regla. */
+    .oculto-en-libro { display: none !important; }
+
     /* Impresión: solo la ficha de la receta, en papel blanco. */
     @media print {
       body.imprimiendo > *:not(#recipe-detail-modal) { display: none !important; }
@@ -38,6 +42,26 @@
       body.imprimiendo .no-print { display: none !important; }
       body.imprimiendo img { max-height: 8cm; object-fit: cover; }
       @page { margin: 1.5cm; }
+
+      /* Libro completo: se imprime solo el contenido, una receta por hoja. */
+      body.imprimiendo-libro header,
+      body.imprimiendo-libro aside,
+      body.imprimiendo-libro nav,
+      body.imprimiendo-libro .no-print,
+      body.imprimiendo-libro #recipe-grid { display: none !important; }
+      body.imprimiendo-libro .ficha-libro {
+        break-inside: avoid;
+        page-break-inside: avoid;
+        break-after: page;
+        page-break-after: always;
+        border: none !important;
+        padding: 0 !important;
+        margin-bottom: 0 !important;
+      }
+      body.imprimiendo-libro .ficha-libro:last-child {
+        break-after: auto;
+        page-break-after: auto;
+      }
     }
 </style>
 <script>
@@ -874,6 +898,104 @@
 
 
     // ---------------------------------------------------------------
+    // Vistas: el listado normal y el libro de cocina
+    // ---------------------------------------------------------------
+    let vistaActual = 'lista';
+
+    function mostrarVista(vista) {
+        vistaActual = vista;
+        const grid = document.getElementById('recipe-grid');
+        const libro = document.getElementById('cookbook');
+        const encabezado = document.getElementById('feed-header');
+
+        document.querySelectorAll('.nav-link').forEach(a => {
+            const activo = a.dataset.vista === vista;
+            a.classList.toggle('text-primary', activo);
+            a.classList.toggle('border-primary', activo);
+            a.classList.toggle('text-on-surface-variant', !activo);
+            a.classList.toggle('border-transparent', !activo);
+        });
+
+        const barraLateral = document.querySelector('aside');
+
+        if (vista === 'libro') {
+            grid.classList.add('hidden');
+            libro.classList.remove('hidden');
+            // El encabezado y las categorías no aplican dentro del libro.
+            if (encabezado) encabezado.classList.add('hidden');
+            if (barraLateral) barraLateral.classList.add('oculto-en-libro');
+            renderLibro();
+        } else {
+            libro.classList.add('hidden');
+            grid.classList.remove('hidden');
+            if (encabezado) encabezado.classList.remove('hidden');
+            if (barraLateral) barraLateral.classList.remove('oculto-en-libro');
+            // «Favoritas» es el listado filtrado; «Explorar» es todo.
+            filtrarCategoria(vista === 'favoritas' ? 'Favoritas' : 'All');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function fichaLibro(r, n) {
+        const ingredientes = (r.ingredients || []).length
+            ? '<ul class="space-y-1">' + r.ingredients.map(i => esSubtitulo(i)
+                ? '<li class="font-bold text-on-surface pt-2">' + escapeHtml(i) + '</li>'
+                : '<li class="text-on-surface-variant flex gap-2"><span class="text-primary">·</span><span>' + escapeHtml(i) + '</span></li>').join('') + '</ul>'
+            : '<p class="text-sm italic text-on-surface-variant">Sin ingredientes anotados.</p>';
+
+        const pasos = (r.steps || []).length
+            ? '<ol class="space-y-2">' + r.steps.map((pp, k) =>
+                '<li class="flex gap-3 text-on-surface-variant"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold flex items-center justify-center">' + (k + 1) + '</span><span>' + escapeHtml(pp) + '</span></li>').join('') + '</ol>'
+            : '<p class="text-sm italic text-on-surface-variant">Sin preparación anotada.</p>';
+
+        return '<article class="ficha-libro bg-surface-container-lowest border border-surface-variant rounded-xl p-8 mb-8">'
+            + '<div class="flex items-baseline justify-between gap-4 mb-1">'
+            + '<h2 class="text-3xl font-bold text-on-surface">' + escapeHtml(r.title) + '</h2>'
+            + '<span class="text-xs uppercase tracking-wider text-outline">' + n + '</span></div>'
+            + (r.description ? '<p class="text-on-surface-variant mb-3">' + escapeHtml(r.description) + '</p>' : '')
+            + '<div class="flex flex-wrap gap-4 text-sm text-outline border-y border-surface-variant py-2 mb-5">'
+            + '<span>' + escapeHtml(r.time) + '</span><span>' + escapeHtml(r.difficulty) + '</span><span>' + escapeHtml(r.category) + '</span>'
+            + (r.favorite ? '<span class="text-primary font-bold">Favorita</span>' : '')
+            + '</div>'
+            + '<div class="grid md:grid-cols-2 gap-8">'
+            + '<section><h3 class="font-bold text-on-surface mb-2 pb-1 border-b border-surface-variant">Ingredientes</h3>' + ingredientes + '</section>'
+            + '<section><h3 class="font-bold text-on-surface mb-2 pb-1 border-b border-surface-variant">Preparación</h3>' + pasos + '</section>'
+            + '</div></article>';
+    }
+
+    function renderLibro() {
+        const libro = document.getElementById('cookbook');
+        const lista = recetasVisibles().slice().sort((a, b) =>
+            String(a.title).localeCompare(String(b.title), 'es'));
+
+        if (!lista.length) {
+            libro.innerHTML = '<div class="text-center py-16 text-on-surface-variant">Todavía no hay recetas que poner en el libro.</div>';
+            return;
+        }
+
+        const indice = lista.map((r, i) =>
+            '<li><button type="button" class="text-left hover:text-primary transition-colors" onclick="document.querySelectorAll(\'.ficha-libro\')[' + i + '].scrollIntoView({behavior:\'smooth\'})">'
+            + escapeHtml(r.title) + '</button></li>').join('');
+
+        libro.innerHTML =
+            '<div class="no-print mb-8 flex flex-wrap items-center justify-between gap-4">'
+            + '<div><h1 class="text-4xl font-bold text-on-surface">Libro de cocina</h1>'
+            + '<p class="text-on-surface-variant">' + lista.length + ' recetas, en orden alfabético.</p></div>'
+            + '<button type="button" onclick="imprimirLibro()" class="px-5 py-2.5 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary/90 shadow-md transition-all flex items-center gap-2">'
+            + '<span class="material-symbols-outlined text-[20px]">print</span> Imprimir el libro</button></div>'
+            + '<div class="no-print mb-10 p-6 bg-surface-container-low border border-surface-variant rounded-xl">'
+            + '<h2 class="font-bold text-on-surface mb-3 uppercase tracking-wider text-sm">Índice</h2>'
+            + '<ol class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-1 list-decimal pl-5 text-on-surface-variant">' + indice + '</ol></div>'
+            + lista.map((r, i) => fichaLibro(r, i + 1)).join('');
+    }
+
+    function imprimirLibro() {
+        document.body.classList.add('imprimiendo-libro');
+        window.print();
+        setTimeout(() => document.body.classList.remove('imprimiendo-libro'), 500);
+    }
+
+    // ---------------------------------------------------------------
     // Sincronización entre dispositivos con un Gist privado de GitHub
     //
     // El token se guarda en este navegador y debe tener SOLO el permiso
@@ -1070,15 +1192,15 @@
 <header class="bg-surface sticky top-0 z-40 border-b border-surface-variant shadow-sm">
 <div class="flex justify-between items-center w-full px-4 md:px-8 py-4 max-w-7xl mx-auto">
 <!-- Brand Logo -->
-<a class="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity" href="#">
+<a class="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity" href="#" onclick="mostrarVista('lista');return false;" title="Volver al inicio">
 <img alt="GOlozas" class="h-12 w-12 rounded-full object-cover border border-surface-variant" src="icons/icon-192.png"/>
 <span class="text-3xl text-primary italic font-bold">GOlozas</span>
 </a>
 <!-- Desktop Navigation -->
 <nav class="hidden md:flex gap-8 items-center">
-<a class="text-on-surface-variant hover:text-primary transition-colors px-3 py-1 font-bold" href="#">Inicio</a>
-<a class="text-primary font-bold border-b-2 border-primary px-3 py-1" href="#">Explorar</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors px-3 py-1 font-bold" href="#">Libro de Cocina</a>
+<a class="nav-link text-primary font-bold border-b-2 border-primary px-3 py-1" data-vista="lista" href="#" onclick="mostrarVista('lista');return false;">Explorar</a>
+<a class="nav-link text-on-surface-variant hover:text-primary transition-colors px-3 py-1 font-bold border-b-2 border-transparent" data-vista="favoritas" href="#" onclick="mostrarVista('favoritas');return false;">Favoritas</a>
+<a class="nav-link text-on-surface-variant hover:text-primary transition-colors px-3 py-1 font-bold border-b-2 border-transparent" data-vista="libro" href="#" onclick="mostrarVista('libro');return false;">Libro de Cocina</a>
 </nav>
 <!-- Trailing Actions -->
 <div class="flex items-center gap-4 relative">
@@ -1143,7 +1265,7 @@
 </aside>
 <!-- Main Feed (Center) -->
 <main class="flex-1 w-full min-w-0 pb-24 lg:pb-0">
-<div class="mb-8">
+<div class="mb-8" id="feed-header">
 <h1 class="text-5xl text-on-surface mb-2 font-bold" id="feed-title">Todas las recetas</h1>
 <p class="text-on-surface-variant text-lg" id="feed-subtitle">Descubre recetas cálidas para acompañar tus mañanas.</p>
 </div>
@@ -1151,14 +1273,16 @@
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="recipe-grid">
 <!-- Rendered via JS -->
 </div>
+<!-- Libro de cocina: todas las fichas seguidas, pensado para imprimir -->
+<div class="hidden" id="cookbook"></div>
 </main>
 </div>
 <!-- Floating Action Button -->
-<button class="fixed bottom-24 lg:bottom-12 right-6 lg:right-12 h-16 w-16 bg-primary text-on-primary rounded-full shadow-xl hover:scale-105 transition-transform flex items-center justify-center z-40 lg:flex hidden md:flex hover:bg-primary/90" onclick="toggleModal()">
+<button class="no-print fixed bottom-24 lg:bottom-12 right-6 lg:right-12 h-16 w-16 bg-primary text-on-primary rounded-full shadow-xl hover:scale-105 transition-transform flex items-center justify-center z-40 lg:flex hidden md:flex hover:bg-primary/90" onclick="toggleModal()">
 <span class="material-symbols-outlined text-[32px]">add</span>
 </button>
 <!-- BottomNavBar (Mobile) -->
-<nav class="bg-surface-container-lowest border-t border-surface-variant shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden">
+<nav class="no-print bg-surface-container-lowest border-t border-surface-variant shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden">
 <button class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" onclick="filtrarCategoria('All')" type="button">
 <span class="material-symbols-outlined">restaurant_menu</span>
 <span class="text-[10px] mt-1 uppercase font-bold">Recetas</span>

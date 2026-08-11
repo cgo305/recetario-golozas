@@ -43,6 +43,14 @@ cuenta de GitHub. Viene desactivada.
   tu elección.
 - **Buscar**: busca por nombre, descripción **e ingredientes**.
 
+Arriba hay tres vistas:
+
+- **Explorar**: todas las recetas en tarjetas.
+- **Favoritas**: solo las marcadas con el corazón.
+- **Libro de Cocina**: todas las fichas completas seguidas, en orden
+  alfabético y con índice. El botón «Imprimir el libro» las manda a papel
+  de una vez, una receta por hoja.
+
 ---
 
 ## Instalarlo en el iPhone
@@ -172,12 +180,18 @@ copia de los archivos para poder funcionar sin conexión. Si cambias
 `index.html`, `app.css` o cualquier icono, edita `sw.js` y sube el número:
 
 ```js
-const VERSION = 'golozas-v5';   // pásalo a 'golozas-v6'
+const VERSION = 'golozas-v6';   // pásalo a 'golozas-v7'
 ```
 
 Sin eso, la app instalada puede seguir mostrando la versión anterior. Las
 recetas **no** se ven afectadas: viven en otro lado y el cambio de versión
 no las toca.
+
+El service worker pide siempre los archivos a la red y solo recurre a la
+copia guardada si no hay conexión (o si la red tarda más de 4 segundos).
+Se hizo así a propósito: cuando servía el CSS desde el caché primero, tras
+publicar una versión el navegador mezclaba el HTML nuevo con los estilos
+y la tipografía viejos, y el diseño aparecía roto.
 
 ---
 
@@ -220,6 +234,13 @@ python3 build/make-icons.py
 **Cambié algo y la app sigue igual.**
 Sube el número de `VERSION` en `sw.js`, publica y recarga. Si insiste,
 cierra la app instalada por completo y vuelve a abrirla.
+
+**Los iconos se ven como palabras («CLOUD_OFF») o el diseño sale
+descuadrado.**
+El navegador está mezclando archivos nuevos con otros guardados de antes.
+Recarga la página; si sigue, cierra todas las pestañas del sitio y vuelve
+a entrar. Ocurría con la versión anterior del service worker y ya está
+corregido.
 
 **Aparece un aviso rojo que dice que no se pudo guardar.**
 El navegador rechazó la escritura. Suele ser falta de espacio o modo

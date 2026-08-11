@@ -6,7 +6,7 @@
 // Para publicar una versión nueva basta con subir el número de VERSION:
 // el navegador descarta el caché viejo y trae los archivos otra vez.
 
-const VERSION = 'golozas-v5';
+const VERSION = 'golozas-v6';
 
 const ARCHIVOS = [
   './',
@@ -55,38 +55,30 @@ self.addEventListener('fetch', (evento) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // nada externo que servir
 
-  // La página: primero la red, para recibir actualizaciones; si no hay
-  // conexión, se sirve la copia guardada.
-  if (req.mode === 'navigate') {
-    evento.respondWith((async () => {
-      try {
-        const red = await fetch(req);
-        const cache = await caches.open(VERSION);
-        cache.put('./index.html', red.clone());
-        return red;
-      } catch (e) {
-        const cache = await caches.open(VERSION);
-        return (await cache.match('./index.html')) || Response.error();
-      }
-    })());
-    return;
-  }
+  // Primero la red para TODO lo del sitio, con la copia guardada como
+  // respaldo si no hay conexión.
+  //
+  // Antes el CSS y las fuentes se servían desde el caché primero. Eso
+  // provocaba que tras publicar una versión nueva el navegador mezclara
+  // el HTML recién descargado con los estilos y la tipografía viejos:
+  // los iconos salían como texto y el diseño se descuadraba. El sitio
+  // entero pesa poco, así que pedirlo a la red no se nota y evita de
+  // raíz esa mezcla.
+  const destino = req.mode === 'navigate' ? './index.html' : req;
 
-  // El resto (CSS, fuentes, iconos): primero el caché, que es lo rápido,
-  // y se refresca por detrás.
   evento.respondWith((async () => {
     const cache = await caches.open(VERSION);
-    const guardado = await cache.match(req);
-    if (guardado) {
-      fetch(req).then(r => { if (r && r.ok) cache.put(req, r); }).catch(() => {});
-      return guardado;
-    }
     try {
-      const red = await fetch(req);
-      if (red && red.ok) cache.put(req, red.clone());
+      // Si la red tarda demasiado, se responde con la copia guardada.
+      const red = await Promise.race([
+        fetch(req),
+        new Promise((_, rechazar) => setTimeout(() => rechazar(new Error('lenta')), 4000))
+      ]);
+      if (red && red.ok) cache.put(destino, red.clone());
       return red;
     } catch (e) {
-      return Response.error();
+      const guardado = await cache.match(destino);
+      return guardado || Response.error();
     }
   })());
 });
