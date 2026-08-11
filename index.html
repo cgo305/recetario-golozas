@@ -1362,19 +1362,19 @@
 <!-- Brand Logo -->
 <a class="flex items-center gap-4 cursor-pointer hover:opacity-80 transition-opacity" href="#" onclick="mostrarVista('lista');return false;" title="Volver al inicio">
 <img alt="GOlozas" class="h-12 w-12 rounded-full object-cover border border-surface-variant" src="icons/icon-192.png"/>
-<span class="text-3xl text-primary italic font-bold">GOlozas</span>
+<span class="hidden sm:inline text-3xl text-primary italic font-bold">GOlozas</span>
 </a>
 <!-- Desktop Navigation -->
-<nav class="hidden md:flex gap-8 items-center">
+<nav class="hidden lg:flex gap-8 items-center">
 <a class="nav-link text-primary font-bold border-b-2 border-primary px-3 py-1" data-vista="lista" href="#" onclick="mostrarVista('lista');return false;">Explorar</a>
 <a class="nav-link text-on-surface-variant hover:text-primary transition-colors px-3 py-1 font-bold border-b-2 border-transparent" data-vista="favoritas" href="#" onclick="mostrarVista('favoritas');return false;">Favoritas</a>
 <a class="nav-link text-on-surface-variant hover:text-primary transition-colors px-3 py-1 font-bold border-b-2 border-transparent" data-vista="libro" href="#" onclick="mostrarVista('libro');return false;">Libro de Cocina</a>
 </nav>
 <!-- Trailing Actions -->
-<div class="flex items-center gap-4 relative">
-<div class="relative hidden sm:block">
+<div class="flex items-center gap-1 sm:gap-3 relative flex-1 justify-end min-w-0">
+<div class="relative flex-1 min-w-0 max-w-xs">
 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-sm">search</span>
-<input class="pl-9 pr-4 py-2 bg-surface-container-lowest border border-surface-variant rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-48 transition-all" id="search-input" placeholder="Buscar recetas..." type="text"/>
+<input class="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-surface-variant rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" id="search-input" placeholder="Buscar recetas..." type="text"/>
 </div>
 <button aria-label="Sincronizar entre dispositivos" class="p-2 text-primary hover:bg-surface-container rounded-full transition-colors" id="sync-btn" onclick="abrirConfigSync()" title="Sincronizar entre dispositivos" type="button">
 <span class="material-symbols-outlined" id="sync-icon">cloud_off</span>
@@ -1450,7 +1450,7 @@
 <span class="material-symbols-outlined text-[32px]">add</span>
 </button>
 <!-- BottomNavBar (Mobile) -->
-<nav class="no-print bg-surface-container-lowest border-t border-surface-variant shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 md:hidden">
+<nav class="no-print bg-surface-container-lowest border-t border-surface-variant shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 lg:hidden">
 <button class="flex flex-col items-center text-on-surface-variant hover:text-primary transition-colors" onclick="mostrarVista('lista')" type="button">
 <span class="material-symbols-outlined">restaurant_menu</span>
 <span class="text-[10px] mt-1 uppercase font-bold">Recetas</span>
