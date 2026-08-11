@@ -6,7 +6,7 @@
 // Para publicar una versión nueva basta con subir el número de VERSION:
 // el navegador descarta el caché viejo y trae los archivos otra vez.
 
-const VERSION = 'golozas-v11';
+const VERSION = 'golozas-v12';
 
 const ARCHIVOS = [
   './',
@@ -18,14 +18,14 @@ const ARCHIVOS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
-  './fonts/glass-antiqua-latin-691d92.woff2',
-  './fonts/glass-antiqua-latin-ext-558b0b.woff2',
-  './fonts/great-vibes-latin-7d348a.woff2',
-  './fonts/great-vibes-latin-ext-40c434.woff2',
-  './fonts/lora-latin-5989f6.woff2',
-  './fonts/lora-latin-831a90.woff2',
-  './fonts/lora-latin-ext-2b409e.woff2',
-  './fonts/lora-latin-ext-80ef2e.woff2',
+  './fonts/glass-antiqua-latin-ext-normal-558b0b.woff2',
+  './fonts/glass-antiqua-latin-normal-691d92.woff2',
+  './fonts/great-vibes-latin-ext-normal-40c434.woff2',
+  './fonts/great-vibes-latin-normal-7d348a.woff2',
+  './fonts/lora-latin-ext-italic-831a90.woff2',
+  './fonts/lora-latin-ext-normal-5989f6.woff2',
+  './fonts/lora-latin-italic-c1f556.woff2',
+  './fonts/lora-latin-normal-8e7e05.woff2',
   './fonts/material-symbols-subset.woff2'
 ];
 
