@@ -45,6 +45,10 @@ cuenta de GitHub. Viene desactivada.
 - **Subtítulos dentro de los ingredientes**: escribe una línea que termine
   en dos puntos, por ejemplo `Para el relleno:`. Se muestra en negrita y
   no cuenta como ingrediente.
+- **Tips**: lo que aprendiste haciéndola —qué salió mal, qué cambiarías,
+  cuánto dura— en su propio campo. Aparecen destacados en la receta y como
+  una nota al margen en la hoja del libro. Si pegas un texto con una
+  sección «Notas», «Notes» o «Tips», se llenan solos.
 - **Favoritas**: el corazón en cada tarjeta, o dentro de la receta.
 - **Editar**: el lápiz en la tarjeta, o el botón «Editar» al abrirla.
 - **Imprimir**: abre la receta y usa «Imprimir». Sale solo la ficha, sin
@@ -213,7 +217,7 @@ copia de los archivos para poder funcionar sin conexión. Si cambias
 `index.html`, `app.css` o cualquier icono, edita `sw.js` y sube el número:
 
 ```js
-const VERSION = 'golozas-v13';  // pásalo a 'golozas-v14'
+const VERSION = 'golozas-v14';  // pásalo a 'golozas-v15'
 ```
 
 Sin eso, la app instalada puede seguir mostrando la versión anterior. Las

@@ -173,6 +173,29 @@
     }
     .pagina-equipo-titulo { color: #72301c; font-weight: bold; }
 
+    /* Tips: como una nota pegada al margen de la hoja */
+    .pagina-tips {
+      font-family: 'Glass Antiqua', serif;
+      font-size: 1.02rem;
+      line-height: 1.5;
+      color: rgba(61, 58, 56, 0.82);
+      background: rgba(181, 206, 170, 0.22);
+      border-left: 3px solid rgba(93, 109, 84, 0.55);
+      border-radius: 2px;
+      margin-top: 1.6rem;
+      padding: 0.9rem 1.1rem;
+    }
+    .pagina-tips-titulo {
+      display: block;
+      font-size: 1.2rem;
+      color: #5D6D54;
+      font-weight: bold;
+      margin-bottom: 0.35rem;
+    }
+    .pagina-tips ul { list-style: none; }
+    .pagina-tips li { position: relative; padding-left: 1rem; margin-bottom: 0.25rem; }
+    .pagina-tips li::before { content: '·'; position: absolute; left: 0.15rem; color: #5D6D54; font-weight: bold; }
+
     /* Índice: la primera hoja del libro */
     .pagina-indice { transform: rotate(-0.3deg); }
     .indice-lista {
@@ -498,6 +521,7 @@
         document.getElementById('recipe-ingredients').value = receta ? (receta.ingredients || []).join('\n') : '';
         document.getElementById('recipe-steps').value = receta ? (receta.steps || []).join('\n') : '';
         document.getElementById('recipe-equipment').value = receta ? (receta.equipment || []).join('\n') : '';
+        document.getElementById('recipe-tips').value = receta ? (receta.tips || []).join('\n') : '';
         document.getElementById('selected-illustration').value = receta ? (receta.illustration || '') : '';
         updatePhotoPreview(receta ? (receta.illustration || '') : '');
 
@@ -1067,6 +1091,7 @@
         if (ingredientes.length) document.getElementById('recipe-ingredients').value = ingredientes.join('\n');
         if (pasos.length) document.getElementById('recipe-steps').value = pasos.join('\n');
         if (equipo.length) document.getElementById('recipe-equipment').value = equipo.join('\n');
+        if (notas.length) document.getElementById('recipe-tips').value = notas.join('\n');
 
         // Descripción, solo si el campo está vacío.
         const campoDesc = document.getElementById('recipe-desc');
@@ -1092,7 +1117,7 @@
             + '<div class="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-on-surface-variant">'
             + '<span>Pasos: <span class="font-bold">' + pasos.length + '</span></span>'
             + '<span>Equipo: <span class="font-bold">' + equipo.length + '</span></span>'
-            + (notas.length ? '<span>Notas: <span class="font-bold">' + notas.length + '</span></span>' : '')
+            + (notas.length ? '<span>Tips: <span class="font-bold">' + notas.length + '</span></span>' : '')
             + '</div>'
             + (enIngles
                 ? '<div class="mt-3 p-3 bg-primary-fixed/25 border border-primary-fixed-dim rounded-lg text-xs text-on-surface-variant">'
@@ -1196,7 +1221,8 @@
             illustration: document.getElementById('selected-illustration').value || '',
             ingredients: enLineas('recipe-ingredients'),
             steps: enLineas('recipe-steps'),
-            equipment: enLineas('recipe-equipment')
+            equipment: enLineas('recipe-equipment'),
+            tips: enLineas('recipe-tips')
         };
 
         const respaldo = recipes.map(r => ({ ...r }));
@@ -1272,6 +1298,14 @@
                 ? '<section class="mt-8"><h3 class="text-lg font-bold text-on-surface mb-3 pb-2 border-b border-surface-variant">Equipo</h3>'
                   + '<ul class="flex flex-wrap gap-2">' + r.equipment.map(e =>
                       '<li class="px-3 py-1 bg-surface-container rounded-full text-sm text-on-surface-variant border border-surface-variant">' + escapeHtml(e) + '</li>').join('')
+                  + '</ul></section>'
+                : '')
+            + ((r.tips || []).length
+                ? '<section class="mt-8 bg-secondary-container/40 border border-secondary-fixed-dim rounded-xl p-5">'
+                  + '<h3 class="text-lg font-bold text-on-surface mb-3 flex items-center gap-2">'
+                  + '<span class="material-symbols-outlined text-[20px] text-secondary">lightbulb</span>Tips</h3>'
+                  + '<ul class="space-y-2">' + r.tips.map(t =>
+                      '<li class="flex gap-2 text-on-surface-variant"><span class="text-secondary">·</span><span>' + escapeHtml(t) + '</span></li>').join('')
                   + '</ul></section>'
                 : '');
 
@@ -1507,6 +1541,10 @@
             + ((r.equipment || []).length
                 ? '<div class="pagina-equipo"><span class="pagina-equipo-titulo">Equipo:</span> '
                   + r.equipment.map(escapeHtml).join(' · ') + '</div>'
+                : '')
+            + ((r.tips || []).length
+                ? '<div class="pagina-tips"><span class="pagina-tips-titulo">Tips</span>'
+                  + '<ul>' + r.tips.map(t => '<li>' + escapeHtml(t) + '</li>').join('') + '</ul></div>'
                 : '')
             + '</article>';
     }
@@ -2016,6 +2054,11 @@ Ingredientes:
 <label class="block text-sm font-bold text-on-surface mb-1.5">Equipo necesario</label>
 <p class="text-xs text-on-surface-variant mb-2">Opcional. Uno por línea.</p>
 <textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none text-on-surface resize-y text-sm" id="recipe-equipment" placeholder="Batidora de pie&#10;Bandeja de horno&#10;Papel de horno" rows="3"></textarea>
+</div>
+<div>
+<label class="block text-sm font-bold text-on-surface mb-1.5">Tips</label>
+<p class="text-xs text-on-surface-variant mb-2">Opcional. Uno por línea. Lo que aprendiste haciéndola: qué salió mal, qué cambiarías, cuánto dura.</p>
+<textarea class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary/50 focus:border-primary focus:outline-none text-on-surface resize-y text-sm" id="recipe-tips" placeholder="La masa queda mejor si reposa toda la noche.&#10;Con menos azúcar quedó igual de rica.&#10;Dura 4 días en un frasco hermético." rows="4"></textarea>
 </div>
 </div>
 </div>
